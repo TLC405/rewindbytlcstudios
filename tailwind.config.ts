@@ -14,8 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Anton', 'sans-serif'],
-        sans: ['Inter', 'sans-serif'],
+        display: ['Bebas Neue', 'sans-serif'],
+        tech: ['Orbitron', 'sans-serif'],
+        sans: ['Space Grotesk', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       colors: {
@@ -62,17 +63,16 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        teal: {
-          dark: "hsl(var(--teal-dark))",
-          mid: "hsl(var(--teal-mid))",
-          light: "hsl(var(--teal-light))",
-        },
+        void: "hsl(var(--void))",
+        midnight: "hsl(var(--midnight))",
+        deep: "hsl(var(--deep))",
+        surface: "hsl(var(--surface))",
+        electric: "hsl(var(--electric))",
+        "neon-pink": "hsl(var(--neon-pink))",
+        "neon-purple": "hsl(var(--neon-purple))",
+        "film-white": "hsl(var(--film-white))",
+        "film-black": "hsl(var(--film-black))",
         gold: "hsl(var(--gold))",
-        cream: "hsl(var(--cream))",
-        film: {
-          black: "hsl(var(--film-black))",
-          white: "hsl(var(--film-white))",
-        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -88,20 +88,10 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        shimmer: {
-          "0%": { backgroundPosition: "-200% 0" },
-          "100%": { backgroundPosition: "200% 0" },
-        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        shimmer: "shimmer 3s linear infinite",
-      },
-      boxShadow: {
-        'film': '0 20px 50px hsl(0 0% 0% / 0.4), 0 10px 20px hsl(0 0% 0% / 0.3)',
-        'card': '0 25px 50px -12px hsl(0 0% 0% / 0.5)',
-        'glow-gold': '0 0 40px hsl(45 100% 55% / 0.3)',
       },
     },
   },
