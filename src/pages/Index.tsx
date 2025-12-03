@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { PremiumBackground } from "@/components/PremiumBackground";
-import { PremiumHero } from "@/components/PremiumHero";
-import { PremiumNavBar } from "@/components/PremiumNavBar";
-import { FilmGallery } from "@/components/FilmGallery";
-import { ActionButtons } from "@/components/ActionButtons";
-import { PremiumAuthModal } from "@/components/PremiumAuthModal";
-import { PremiumTransformationStudio } from "@/components/PremiumTransformationStudio";
-import { PremiumMusicPlayer } from "@/components/PremiumMusicPlayer";
+import { AtomicBackground } from "@/components/AtomicBackground";
+import { AtomicHero } from "@/components/AtomicHero";
+import { AtomicNavBar } from "@/components/AtomicNavBar";
+import { AtomicGallery } from "@/components/AtomicGallery";
+import { AtomicAuthModal } from "@/components/AtomicAuthModal";
+import { AtomicStudio } from "@/components/AtomicStudio";
+import { AtomicMusicPlayer } from "@/components/AtomicMusicPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Zap } from "lucide-react";
 
 interface Scenario {
   id: string;
@@ -51,7 +51,6 @@ const Index = () => {
   }, []);
 
   const fetchUserData = async (userId: string) => {
-    // Fetch credits
     const { data: profile } = await supabase
       .from('profiles')
       .select('credits')
@@ -62,7 +61,6 @@ const Index = () => {
       setCredits(profile.credits);
     }
 
-    // Fetch transformations
     const { data: transformations } = await supabase
       .from('transformations')
       .select(`
@@ -98,31 +96,38 @@ const Index = () => {
     });
   };
 
-  const handleNewTape = () => {
-    if (!user) {
-      setShowAuthModal(true);
-      return;
-    }
-    // Scroll to gallery or show scenario selector
-    document.querySelector('#gallery')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-teal-gradient flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="text-center"
         >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 rounded-full border-2 border-film-white border-t-transparent mx-auto mb-4"
-          />
-          <span className="font-display text-2xl tracking-wider text-film-white">
-            REWIND
-          </span>
+          <div className="relative mb-6">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              className="w-20 h-20 rounded-full border-2 border-primary/30 border-t-primary mx-auto"
+            />
+            <motion.div
+              animate={{ rotate: -360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              className="absolute inset-2 rounded-full border-2 border-accent/30 border-b-accent"
+            />
+            <motion.div
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <Zap className="w-8 h-8 text-primary" />
+            </motion.div>
+          </div>
+          <h1 className="font-display text-4xl tracking-wide">
+            <span className="text-neon">R</span>
+            <span className="text-film-white">EWIN</span>
+            <span className="text-neon-pink">D</span>
+          </h1>
         </motion.div>
       </div>
     );
@@ -130,13 +135,13 @@ const Index = () => {
 
   return (
     <div className="min-h-screen text-foreground overflow-x-hidden">
-      {/* Premium Background */}
-      <PremiumBackground />
+      {/* Background */}
+      <AtomicBackground />
       
       {/* Main Content */}
       <AnimatePresence mode="wait">
         {selectedScenario ? (
-          <PremiumTransformationStudio
+          <AtomicStudio
             key="studio"
             scenario={selectedScenario}
             onBack={() => {
@@ -154,44 +159,54 @@ const Index = () => {
             className="relative z-10"
           >
             {/* Navigation */}
-            <PremiumNavBar 
+            <AtomicNavBar 
               user={user} 
               credits={credits}
               onAuthClick={() => setShowAuthModal(true)} 
             />
             
             {/* Hero Section */}
-            <PremiumHero />
+            <AtomicHero />
             
-            {/* Film Gallery */}
-            <div id="gallery">
-              <FilmGallery 
-                onSelectScenario={handleScenarioSelect}
-                userTransformations={userTransformations}
-              />
-            </div>
-            
-            {/* Action Buttons */}
-            <ActionButtons 
-              onNewTape={handleNewTape}
-              hasTransformations={userTransformations.length > 0}
+            {/* Gallery */}
+            <AtomicGallery 
+              onSelectScenario={handleScenarioSelect}
+              userTransformations={userTransformations}
             />
 
             {/* Footer */}
-            <footer className="py-12 text-center">
-              <p className="font-mono text-xs text-film-white/40 tracking-wider">
-                © 2024 REWIND · POWERED BY TRUTH, LOVE & CONNECTION
-              </p>
+            <footer className="py-16 text-center relative">
+              <div className="max-w-2xl mx-auto px-4">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <div className="flex items-center justify-center gap-4 mb-4">
+                    <div className="h-px w-12 bg-gradient-to-r from-transparent to-primary/40" />
+                    <span className="font-tech text-xs tracking-[0.3em] text-muted-foreground uppercase">
+                      Powered by AI
+                    </span>
+                    <div className="h-px w-12 bg-gradient-to-l from-transparent to-accent/40" />
+                  </div>
+                  <p className="font-display text-lg text-film-white/60 mb-2">
+                    REWIND
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    © 2024 · Truth, Love & Connection
+                  </p>
+                </motion.div>
+              </div>
             </footer>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Music Player */}
-      <PremiumMusicPlayer autoPlay={true} />
+      <AtomicMusicPlayer autoPlay={true} />
 
       {/* Auth Modal */}
-      <PremiumAuthModal
+      <AtomicAuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthChange}
