@@ -1,15 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { SynthwaveBackground } from "@/components/SynthwaveBackground";
-import { BoomboxHero } from "@/components/BoomboxHero";
-import { ScenarioSelector } from "@/components/ScenarioSelector";
-import { TransformationStudio } from "@/components/TransformationStudio";
-import { FeaturesSection } from "@/components/FeaturesSection";
-import { Footer } from "@/components/Footer";
-import { NavBar } from "@/components/NavBar";
-import { MusicPlayer } from "@/components/MusicPlayer";
-import { UserGallery } from "@/components/UserGallery";
-import { AuthModal } from "@/components/AuthModal";
+import { PremiumBackground } from "@/components/PremiumBackground";
+import { PremiumHero } from "@/components/PremiumHero";
+import { PremiumNavBar } from "@/components/PremiumNavBar";
+import { FilmGallery } from "@/components/FilmGallery";
+import { ActionButtons } from "@/components/ActionButtons";
+import { PremiumAuthModal } from "@/components/PremiumAuthModal";
+import { PremiumTransformationStudio } from "@/components/PremiumTransformationStudio";
+import { PremiumMusicPlayer } from "@/components/PremiumMusicPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -24,22 +22,63 @@ interface Scenario {
 
 const Index = () => {
   const [user, setUser] = useState<any>(null);
+  const [credits, setCredits] = useState(0);
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [userTransformations, setUserTransformations] = useState<any[]>([]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserData(session.user.id);
+      }
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserData(session.user.id);
+      } else {
+        setCredits(0);
+        setUserTransformations([]);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUserData = async (userId: string) => {
+    // Fetch credits
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('credits')
+      .eq('user_id', userId)
+      .single();
+    
+    if (profile) {
+      setCredits(profile.credits);
+    }
+
+    // Fetch transformations
+    const { data: transformations } = await supabase
+      .from('transformations')
+      .select(`
+        id,
+        transformed_image_url,
+        scenario_id,
+        scenarios (title, era)
+      `)
+      .eq('user_id', userId)
+      .eq('status', 'completed')
+      .order('created_at', { ascending: false });
+    
+    if (transformations) {
+      setUserTransformations(transformations);
+    }
+  };
 
   const handleScenarioSelect = (scenario: Scenario) => {
     if (!user) {
@@ -53,12 +92,24 @@ const Index = () => {
   const handleAuthChange = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserData(session.user.id);
+      }
     });
+  };
+
+  const handleNewTape = () => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+    // Scroll to gallery or show scenario selector
+    document.querySelector('#gallery')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0015] flex items-center justify-center">
+      <div className="min-h-screen bg-teal-gradient flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -67,10 +118,10 @@ const Index = () => {
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 rounded-full border-2 border-[#ff6b9d] border-t-transparent mx-auto mb-4"
+            className="w-16 h-16 rounded-full border-2 border-film-white border-t-transparent mx-auto mb-4"
           />
-          <span className="font-digital text-lg tracking-widest text-[#ff6b9d]">
-            LOADING...
+          <span className="font-display text-2xl tracking-wider text-film-white">
+            REWIND
           </span>
         </motion.div>
       </div>
@@ -78,20 +129,20 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen text-foreground overflow-x-hidden" style={{ background: '#0a0015' }}>
-      {/* Synthwave Background */}
-      <SynthwaveBackground />
-      
-      {/* Navigation */}
-      <NavBar user={user} onAuthChange={handleAuthChange} />
+    <div className="min-h-screen text-foreground overflow-x-hidden">
+      {/* Premium Background */}
+      <PremiumBackground />
       
       {/* Main Content */}
       <AnimatePresence mode="wait">
         {selectedScenario ? (
-          <TransformationStudio
+          <PremiumTransformationStudio
             key="studio"
             scenario={selectedScenario}
-            onBack={() => setSelectedScenario(null)}
+            onBack={() => {
+              setSelectedScenario(null);
+              if (user) fetchUserData(user.id);
+            }}
             userId={user?.id}
           />
         ) : (
@@ -102,31 +153,45 @@ const Index = () => {
             exit={{ opacity: 0 }}
             className="relative z-10"
           >
+            {/* Navigation */}
+            <PremiumNavBar 
+              user={user} 
+              credits={credits}
+              onAuthClick={() => setShowAuthModal(true)} 
+            />
+            
             {/* Hero Section */}
-            <div className="pt-16">
-              <BoomboxHero />
+            <PremiumHero />
+            
+            {/* Film Gallery */}
+            <div id="gallery">
+              <FilmGallery 
+                onSelectScenario={handleScenarioSelect}
+                userTransformations={userTransformations}
+              />
             </div>
             
-            {/* Scenario Selection */}
-            <ScenarioSelector onSelect={handleScenarioSelect} />
-            
-            {/* User Gallery (if logged in) */}
-            {user && <UserGallery userId={user.id} />}
-            
-            {/* Features */}
-            <FeaturesSection />
-            
+            {/* Action Buttons */}
+            <ActionButtons 
+              onNewTape={handleNewTape}
+              hasTransformations={userTransformations.length > 0}
+            />
+
             {/* Footer */}
-            <Footer />
+            <footer className="py-12 text-center">
+              <p className="font-mono text-xs text-film-white/40 tracking-wider">
+                © 2024 REWIND · POWERED BY TRUTH, LOVE & CONNECTION
+              </p>
+            </footer>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Music Player with autoplay */}
-      <MusicPlayer autoPlay={true} />
+      {/* Music Player */}
+      <PremiumMusicPlayer autoPlay={true} />
 
       {/* Auth Modal */}
-      <AuthModal
+      <PremiumAuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthChange}

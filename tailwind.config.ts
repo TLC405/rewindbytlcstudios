@@ -14,9 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        digital: ['Orbitron', 'monospace'],
-        display: ['Bebas Neue', 'sans-serif'],
+        display: ['Anton', 'sans-serif'],
         sans: ['Inter', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -62,21 +62,17 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        chrome: {
-          DEFAULT: "hsl(var(--chrome))",
-          dark: "hsl(var(--chrome-dark))",
+        teal: {
+          dark: "hsl(var(--teal-dark))",
+          mid: "hsl(var(--teal-mid))",
+          light: "hsl(var(--teal-light))",
         },
-        led: {
-          amber: "hsl(var(--led-amber))",
-          red: "hsl(var(--led-red))",
-          green: "hsl(var(--led-green))",
+        gold: "hsl(var(--gold))",
+        cream: "hsl(var(--cream))",
+        film: {
+          black: "hsl(var(--film-black))",
+          white: "hsl(var(--film-white))",
         },
-        wood: {
-          DEFAULT: "hsl(var(--wood))",
-          light: "hsl(var(--wood-light))",
-        },
-        cassette: "hsl(var(--cassette))",
-        mesh: "hsl(var(--speaker-mesh))",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -103,9 +99,9 @@ export default {
         shimmer: "shimmer 3s linear infinite",
       },
       boxShadow: {
-        'glow-amber': '0 0 20px hsl(35 100% 50% / 0.5), 0 0 40px hsl(35 100% 50% / 0.3)',
-        'glow-amber-lg': '0 0 30px hsl(35 100% 50% / 0.7), 0 0 60px hsl(35 100% 50% / 0.4)',
-        'inner-dark': 'inset 0 2px 10px hsl(0 0% 0%)',
+        'film': '0 20px 50px hsl(0 0% 0% / 0.4), 0 10px 20px hsl(0 0% 0% / 0.3)',
+        'card': '0 25px 50px -12px hsl(0 0% 0% / 0.5)',
+        'glow-gold': '0 0 40px hsl(45 100% 55% / 0.3)',
       },
     },
   },
