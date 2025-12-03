@@ -2,95 +2,81 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Boombox Dark Theme */
+    --background: 0 0% 4%;
+    --foreground: 40 20% 90%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 0 0% 8%;
+    --card-foreground: 40 20% 90%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 40 20% 90%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Amber LED Primary */
+    --primary: 35 100% 50%;
+    --primary-foreground: 0 0% 4%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Chrome Silver Secondary */
+    --secondary: 220 10% 40%;
+    --secondary-foreground: 40 20% 90%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 40 10% 55%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Warm Wood Accent */
+    --accent: 25 60% 25%;
+    --accent-foreground: 40 30% 90%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 0 0% 18%;
+    --input: 0 0% 15%;
+    --ring: 35 100% 50%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Custom Colors */
+    --chrome: 220 15% 75%;
+    --chrome-dark: 220 10% 30%;
+    --led-amber: 35 100% 50%;
+    --led-red: 0 85% 50%;
+    --led-green: 120 70% 40%;
+    --wood: 25 50% 20%;
+    --wood-light: 30 40% 35%;
+    --cassette: 35 20% 15%;
+    --speaker-mesh: 0 0% 10%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Glows */
+    --glow-amber: 0 0 20px hsl(35 100% 50% / 0.5), 0 0 40px hsl(35 100% 50% / 0.3);
+    --glow-amber-intense: 0 0 30px hsl(35 100% 50% / 0.7), 0 0 60px hsl(35 100% 50% / 0.4), 0 0 100px hsl(35 100% 50% / 0.2);
+    --glow-red: 0 0 15px hsl(0 85% 50% / 0.6);
 
-    --sidebar-primary: 240 5.9% 10%;
+    /* Gradients */
+    --gradient-chrome: linear-gradient(180deg, hsl(220 15% 85%) 0%, hsl(220 10% 50%) 50%, hsl(220 15% 70%) 100%);
+    --gradient-wood: linear-gradient(180deg, hsl(30 40% 35%) 0%, hsl(25 50% 20%) 100%);
+    --gradient-dark: linear-gradient(180deg, hsl(0 0% 8%) 0%, hsl(0 0% 4%) 100%);
+    --gradient-mesh: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      hsl(0 0% 8%) 2px,
+      hsl(0 0% 8%) 4px
+    );
 
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar */
+    --sidebar-background: 0 0% 6%;
+    --sidebar-foreground: 40 20% 90%;
+    --sidebar-primary: 35 100% 50%;
+    --sidebar-primary-foreground: 0 0% 4%;
+    --sidebar-accent: 0 0% 12%;
+    --sidebar-accent-foreground: 40 20% 90%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 35 100% 50%;
   }
 }
 
@@ -101,5 +87,151 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 0.05em;
+  }
+
+  .font-digital {
+    font-family: 'Orbitron', monospace;
+  }
+}
+
+@layer components {
+  .led-text {
+    color: hsl(var(--led-amber));
+    text-shadow: var(--glow-amber);
+  }
+
+  .led-text-intense {
+    color: hsl(var(--led-amber));
+    text-shadow: var(--glow-amber-intense);
+  }
+
+  .chrome-surface {
+    background: var(--gradient-chrome);
+    box-shadow: 
+      inset 0 1px 0 hsl(0 0% 100% / 0.3),
+      inset 0 -1px 0 hsl(0 0% 0% / 0.3),
+      0 2px 4px hsl(0 0% 0% / 0.5);
+  }
+
+  .wood-surface {
+    background: var(--gradient-wood);
+    box-shadow: 
+      inset 0 1px 0 hsl(30 40% 45% / 0.3),
+      inset 0 -1px 0 hsl(0 0% 0% / 0.5);
+  }
+
+  .speaker-mesh {
+    background: 
+      var(--gradient-mesh),
+      radial-gradient(circle at 50% 50%, hsl(0 0% 15%) 0%, hsl(0 0% 5%) 100%);
+  }
+
+  .boombox-body {
+    background: linear-gradient(180deg, hsl(0 0% 12%) 0%, hsl(0 0% 6%) 50%, hsl(0 0% 8%) 100%);
+    box-shadow:
+      inset 0 2px 0 hsl(0 0% 20%),
+      inset 0 -2px 0 hsl(0 0% 0%),
+      0 20px 60px hsl(0 0% 0% / 0.8),
+      0 0 100px hsl(35 100% 50% / 0.1);
+  }
+
+  .cassette-window {
+    background: linear-gradient(180deg, hsl(0 0% 8%) 0%, hsl(0 0% 4%) 100%);
+    box-shadow:
+      inset 0 2px 10px hsl(0 0% 0%),
+      inset 0 0 30px hsl(0 0% 0% / 0.5);
+    border: 1px solid hsl(0 0% 15%);
+  }
+
+  .vu-bar {
+    background: linear-gradient(90deg, 
+      hsl(120 70% 40%) 0%, 
+      hsl(60 80% 50%) 60%, 
+      hsl(35 100% 50%) 80%, 
+      hsl(0 85% 50%) 100%
+    );
+  }
+
+  .button-3d {
+    background: linear-gradient(180deg, hsl(0 0% 25%) 0%, hsl(0 0% 15%) 100%);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 35%),
+      inset 0 -1px 0 hsl(0 0% 5%),
+      0 4px 0 hsl(0 0% 8%),
+      0 6px 10px hsl(0 0% 0% / 0.5);
+    transition: all 0.1s ease;
+  }
+
+  .button-3d:active {
+    transform: translateY(2px);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 35%),
+      inset 0 -1px 0 hsl(0 0% 5%),
+      0 2px 0 hsl(0 0% 8%),
+      0 3px 6px hsl(0 0% 0% / 0.5);
+  }
+
+  .scenario-card {
+    @apply relative overflow-hidden rounded-lg;
+    background: linear-gradient(145deg, hsl(0 0% 10%) 0%, hsl(0 0% 6%) 100%);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 20% / 0.5),
+      0 10px 40px hsl(0 0% 0% / 0.5);
+  }
+
+  .scenario-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, hsl(35 100% 50% / 0.1) 0%, transparent 50%);
+    pointer-events: none;
+  }
+}
+
+@layer utilities {
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      text-shadow: 0 0 20px hsl(35 100% 50% / 0.5), 0 0 40px hsl(35 100% 50% / 0.3);
+    }
+    50% {
+      text-shadow: 0 0 30px hsl(35 100% 50% / 0.8), 0 0 60px hsl(35 100% 50% / 0.5), 0 0 80px hsl(35 100% 50% / 0.3);
+    }
+  }
+
+  .animate-vu-meter {
+    animation: vu-bounce 0.5s ease-in-out infinite alternate;
+  }
+
+  @keyframes vu-bounce {
+    0% { transform: scaleX(0.3); }
+    100% { transform: scaleX(1); }
+  }
+
+  .animate-tape-spin {
+    animation: tape-spin 3s linear infinite;
+  }
+
+  @keyframes tape-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
   }
 }

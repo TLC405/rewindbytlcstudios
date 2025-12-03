@@ -13,6 +13,11 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        digital: ['Orbitron', 'monospace'],
+        display: ['Bebas Neue', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -57,6 +62,21 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        chrome: {
+          DEFAULT: "hsl(var(--chrome))",
+          dark: "hsl(var(--chrome-dark))",
+        },
+        led: {
+          amber: "hsl(var(--led-amber))",
+          red: "hsl(var(--led-red))",
+          green: "hsl(var(--led-green))",
+        },
+        wood: {
+          DEFAULT: "hsl(var(--wood))",
+          light: "hsl(var(--wood-light))",
+        },
+        cassette: "hsl(var(--cassette))",
+        mesh: "hsl(var(--speaker-mesh))",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -65,25 +85,27 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        shimmer: "shimmer 3s linear infinite",
+      },
+      boxShadow: {
+        'glow-amber': '0 0 20px hsl(35 100% 50% / 0.5), 0 0 40px hsl(35 100% 50% / 0.3)',
+        'glow-amber-lg': '0 0 30px hsl(35 100% 50% / 0.7), 0 0 60px hsl(35 100% 50% / 0.4)',
+        'inner-dark': 'inset 0 2px 10px hsl(0 0% 0%)',
       },
     },
   },
