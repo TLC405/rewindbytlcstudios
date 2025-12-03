@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { SynthwaveBackground } from "@/components/SynthwaveBackground";
 import { BoomboxHero } from "@/components/BoomboxHero";
 import { ScenarioSelector } from "@/components/ScenarioSelector";
 import { TransformationStudio } from "@/components/TransformationStudio";
@@ -28,13 +29,11 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
@@ -59,24 +58,30 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a0015] flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="text-center"
         >
-          <div className="cassette-window inline-block px-6 py-3 mb-4">
-            <span className="font-digital text-lg tracking-widest led-text animate-pulse">
-              LOADING...
-            </span>
-          </div>
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            className="w-16 h-16 rounded-full border-2 border-[#ff6b9d] border-t-transparent mx-auto mb-4"
+          />
+          <span className="font-digital text-lg tracking-widest text-[#ff6b9d]">
+            LOADING...
+          </span>
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="min-h-screen text-foreground overflow-x-hidden" style={{ background: '#0a0015' }}>
+      {/* Synthwave Background */}
+      <SynthwaveBackground />
+      
       {/* Navigation */}
       <NavBar user={user} onAuthChange={handleAuthChange} />
       
@@ -95,6 +100,7 @@ const Index = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            className="relative z-10"
           >
             {/* Hero Section */}
             <div className="pt-16">
@@ -116,8 +122,8 @@ const Index = () => {
         )}
       </AnimatePresence>
 
-      {/* Music Player */}
-      <MusicPlayer />
+      {/* Music Player with autoplay */}
+      <MusicPlayer autoPlay={true} />
 
       {/* Auth Modal */}
       <AuthModal

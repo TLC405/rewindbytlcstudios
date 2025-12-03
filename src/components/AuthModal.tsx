@@ -58,14 +58,20 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
+          style={{ background: 'rgba(10, 0, 21, 0.9)' }}
           onClick={onClose}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="relative w-full max-w-md mx-4 boombox-body p-8 rounded-2xl"
+            className="relative w-full max-w-md mx-4 p-8 rounded-2xl"
+            style={{
+              background: 'linear-gradient(145deg, rgba(255, 107, 157, 0.1) 0%, rgba(26, 0, 51, 0.95) 100%)',
+              border: '1px solid rgba(255, 107, 157, 0.3)',
+              boxShadow: '0 20px 60px rgba(255, 107, 157, 0.2)',
+            }}
             onClick={e => e.stopPropagation()}
           >
             {/* Close button */}
@@ -78,8 +84,18 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
             {/* Header */}
             <div className="text-center mb-8">
-              <div className="cassette-window inline-block px-6 py-2 mb-4">
-                <span className="font-digital text-lg tracking-wider led-text">
+              <div 
+                className="inline-block px-6 py-2 mb-4 rounded border border-[#ff6b9d]/30"
+                style={{ background: 'rgba(255, 107, 157, 0.1)' }}
+              >
+                <span 
+                  className="font-digital text-lg tracking-wider"
+                  style={{
+                    background: 'linear-gradient(180deg, #ffbe76 0%, #ff6b9d 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
                   {mode === 'login' ? 'WELCOME BACK' : 'JOIN REWIND'}
                 </span>
               </div>
@@ -100,7 +116,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                     placeholder="Display Name"
                     value={displayName}
                     onChange={e => setDisplayName(e.target.value)}
-                    className="pl-10 bg-background/50 border-border/50"
+                    className="pl-10 bg-[#0a0015]/50 border-[#ff6b9d]/30 focus:border-[#ff6b9d]"
                     required
                   />
                 </div>
@@ -113,7 +129,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   placeholder="Email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="pl-10 bg-background/50 border-border/50"
+                  className="pl-10 bg-[#0a0015]/50 border-[#ff6b9d]/30 focus:border-[#ff6b9d]"
                   required
                 />
               </div>
@@ -125,7 +141,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   placeholder="Password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="pl-10 bg-background/50 border-border/50"
+                  className="pl-10 bg-[#0a0015]/50 border-[#ff6b9d]/30 focus:border-[#ff6b9d]"
                   required
                   minLength={6}
                 />
@@ -133,8 +149,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
               <Button
                 type="submit"
-                variant="boombox"
-                className="w-full"
+                className="w-full bg-gradient-to-r from-[#ff6b9d] to-[#c44569] hover:opacity-90 text-white"
                 disabled={loading}
               >
                 {loading ? (
@@ -150,7 +165,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
               <button
                 type="button"
                 onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                className="text-sm text-muted-foreground hover:text-[#ff6b9d] transition-colors"
               >
                 {mode === 'login' 
                   ? "Don't have an account? Sign up"

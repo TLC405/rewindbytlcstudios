@@ -30,9 +30,7 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section className="py-24 px-4 relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-muted/20 via-background to-muted/20" />
-      
+    <section className="relative py-24 px-4">
       <div className="relative z-10 max-w-6xl mx-auto">
         {/* Section Header */}
         <motion.div
@@ -42,12 +40,22 @@ export function FeaturesSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-card/50 mb-6">
-            <span className="w-2 h-2 rounded-full bg-led-green animate-pulse" />
-            <span className="font-digital text-xs tracking-widest text-muted-foreground">TECHNOLOGY</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#ff6b9d]/30 bg-[#ff6b9d]/10 mb-6">
+            <span className="w-2 h-2 rounded-full bg-[#4ade80] animate-pulse" />
+            <span className="font-digital text-xs tracking-widest text-[#ff6b9d]">TECHNOLOGY</span>
           </div>
           <h2 className="font-display text-4xl md:text-6xl text-foreground mb-4">
-            How <span className="led-text">Rewind</span> Works
+            How{' '}
+            <span 
+              style={{
+                background: 'linear-gradient(180deg, #ffbe76 0%, #ff6b9d 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Rewind
+            </span>
+            {' '}Works
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Built on sophisticated AI prompting strategies that separate identity from context, 
@@ -66,19 +74,26 @@ export function FeaturesSection() {
               transition={{ duration: 0.6, delay: index * 0.15 }}
               className="group"
             >
-              <div className="boombox-body rounded-2xl p-6 h-full hover:shadow-glow-amber transition-all duration-500">
+              <div 
+                className="rounded-2xl p-6 h-full transition-all duration-500"
+                style={{
+                  background: 'linear-gradient(145deg, rgba(255, 107, 157, 0.1) 0%, rgba(26, 0, 51, 0.8) 100%)',
+                  border: '1px solid rgba(255, 107, 157, 0.2)',
+                  boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+                }}
+              >
                 {/* Icon & Highlight */}
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center border border-border group-hover:border-primary/50 transition-colors">
-                    <feature.icon className="w-6 h-6 text-primary" />
+                  <div className="w-12 h-12 rounded-xl bg-[#ff6b9d]/10 flex items-center justify-center border border-[#ff6b9d]/30 group-hover:border-[#ff6b9d]/60 transition-colors">
+                    <feature.icon className="w-6 h-6 text-[#ff6b9d]" />
                   </div>
-                  <span className="font-digital text-[9px] tracking-widest text-led-green bg-led-green/10 px-2 py-1 rounded border border-led-green/20">
+                  <span className="font-digital text-[9px] tracking-widest text-[#4ade80] bg-[#4ade80]/10 px-2 py-1 rounded border border-[#4ade80]/20">
                     {feature.highlight}
                   </span>
                 </div>
                 
                 {/* Content */}
-                <h3 className="font-display text-2xl text-foreground mb-3 group-hover:led-text transition-all duration-300">
+                <h3 className="font-display text-2xl text-foreground mb-3 group-hover:text-[#ff6b9d] transition-all duration-300">
                   {feature.title}
                 </h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
@@ -90,14 +105,17 @@ export function FeaturesSection() {
                   {[...Array(3)].map((_, i) => (
                     <div
                       key={i}
-                      className="h-1 flex-1 bg-border rounded-full overflow-hidden"
+                      className="h-1 flex-1 bg-[#1a0033] rounded-full overflow-hidden"
                     >
                       <motion.div
                         initial={{ width: 0 }}
                         whileInView={{ width: "100%" }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.8, delay: index * 0.1 + i * 0.2 }}
-                        className="h-full bg-gradient-to-r from-led-green via-led-amber to-led-red"
+                        className="h-full"
+                        style={{
+                          background: 'linear-gradient(90deg, #4ade80, #ffbe76, #ff6b9d)',
+                        }}
                       />
                     </div>
                   ))}

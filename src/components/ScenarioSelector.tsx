@@ -54,16 +54,13 @@ export function ScenarioSelector({ onSelect }: ScenarioSelectorProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#ff6b9d]" />
       </div>
     );
   }
 
   return (
-    <section className="py-24 px-4 relative overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/10 to-background" />
-      
+    <section id="scenarios" className="relative py-24 px-4">
       <div className="relative z-10 max-w-6xl mx-auto">
         {/* Section Header */}
         <motion.div
@@ -73,15 +70,24 @@ export function ScenarioSelector({ onSelect }: ScenarioSelectorProps) {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/5 mb-6">
-            <span className="font-digital text-xs tracking-widest text-primary">SELECT YOUR ERA</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#ff6b9d]/30 bg-[#ff6b9d]/10 mb-6">
+            <span className="font-digital text-xs tracking-widest text-[#ff6b9d]">LEGENDARY SCENARIOS</span>
           </div>
           <h2 className="font-display text-4xl md:text-6xl text-foreground mb-4">
-            Choose Your <span className="led-text">Destiny</span>
+            Choose Your{' '}
+            <span 
+              style={{
+                background: 'linear-gradient(180deg, #ffbe76 0%, #ff6b9d 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Destiny
+            </span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Select a legendary scenario and upload your photo. Our AI will transform you 
-            into that moment in history while preserving your identity perfectly.
+            Select a legendary moment in history and upload your photo. 
+            Our AI preserves your identity while transforming everything else.
           </p>
         </motion.div>
         
@@ -97,35 +103,55 @@ export function ScenarioSelector({ onSelect }: ScenarioSelectorProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ scale: 1.02, y: -5 }}
+                whileHover={{ scale: 1.03, y: -8 }}
                 onClick={() => onSelect(scenario)}
-                className="scenario-card group cursor-pointer"
+                className="group cursor-pointer relative rounded-xl overflow-hidden"
+                style={{
+                  background: 'linear-gradient(145deg, rgba(255, 107, 157, 0.1) 0%, rgba(26, 0, 51, 0.8) 100%)',
+                  border: '1px solid rgba(255, 107, 157, 0.2)',
+                  boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+                }}
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${scenario.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                {/* Hover glow */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#ff6b9d]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 
                 <div className="relative p-6">
                   {/* Era Badge */}
                   <div className="flex items-center justify-between mb-4">
-                    <span className="font-digital text-[10px] tracking-widest text-muted-foreground border border-border px-2 py-1 rounded">
+                    <span className="font-digital text-[10px] tracking-widest text-[#ff6b9d]/70 border border-[#ff6b9d]/30 px-2 py-1 rounded">
                       {scenario.era}
                     </span>
-                    <IconComponent className={`w-5 h-5 ${scenario.accent} opacity-60 group-hover:opacity-100 transition-opacity`} />
+                    <IconComponent className="w-5 h-5 text-[#ff6b9d] opacity-60 group-hover:opacity-100 transition-opacity" />
                   </div>
                   
                   {/* Content */}
-                  <h3 className="font-display text-2xl text-foreground mb-2 group-hover:led-text transition-all duration-300">
-                    {scenario.title}
+                  <h3 
+                    className="font-display text-2xl mb-2 transition-all duration-300"
+                    style={{
+                      color: 'white',
+                    }}
+                  >
+                    <span className="group-hover:text-[#ff6b9d] transition-colors">
+                      {scenario.title}
+                    </span>
                   </h3>
                   <p className="text-sm text-muted-foreground">
                     {scenario.description}
                   </p>
                   
                   {/* Hover indicator */}
-                  <div className="mt-4 flex items-center gap-2 text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="mt-4 flex items-center gap-2 text-xs text-[#ff6b9d] opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <span className="font-digital tracking-wider">ENTER ERA</span>
-                    <span className="w-4 h-px bg-primary" />
+                    <motion.span 
+                      className="w-8 h-px bg-[#ff6b9d]"
+                      initial={{ width: 0 }}
+                      whileInView={{ width: 32 }}
+                    />
                   </div>
                 </div>
+
+                {/* Bottom glow line */}
+                <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#ff6b9d] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </motion.div>
             );
           })}

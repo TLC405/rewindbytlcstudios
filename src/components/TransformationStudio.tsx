@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Upload, Sparkles, Download, ArrowLeft, Loader2, Camera, X } from "lucide-react";
+import { useState, useRef } from "react";
+import { motion } from "framer-motion";
+import { Upload, Sparkles, Download, ArrowLeft, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { SynthwaveBackground } from "./SynthwaveBackground";
 
 interface Scenario {
   id: string;
@@ -55,13 +56,11 @@ export function TransformationStudio({ scenario, onBack, userId }: Transformatio
     setIsTransforming(true);
     setProgress(0);
 
-    // Simulate progress
     const progressInterval = setInterval(() => {
       setProgress(prev => Math.min(prev + Math.random() * 15, 90));
     }, 500);
 
     try {
-      // Create transformation record
       const { data: transformation, error: createError } = await supabase
         .from('transformations')
         .insert({
@@ -75,7 +74,6 @@ export function TransformationStudio({ scenario, onBack, userId }: Transformatio
 
       if (createError) throw createError;
 
-      // Call the transform edge function
       const { data, error } = await supabase.functions.invoke('transform-image', {
         body: {
           imageBase64: originalImage,
@@ -129,22 +127,24 @@ export function TransformationStudio({ scenario, onBack, userId }: Transformatio
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="min-h-screen bg-background py-8 px-4"
+      className="min-h-screen py-8 px-4 relative"
     >
-      <div className="max-w-6xl mx-auto">
+      <SynthwaveBackground />
+      
+      <div className="relative z-10 max-w-6xl mx-auto pt-16">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Button
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="hover:bg-primary/10"
+            className="hover:bg-[#ff6b9d]/10 text-foreground"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-digital text-xs tracking-widest text-muted-foreground">
+              <span className="font-digital text-xs tracking-widest text-[#ff6b9d]">
                 {scenario?.era}
               </span>
             </div>
@@ -158,12 +158,22 @@ export function TransformationStudio({ scenario, onBack, userId }: Transformatio
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Original Image */}
           <div className="space-y-4">
-            <div className="cassette-window p-1">
-              <span className="font-digital text-xs tracking-widest">ORIGINAL</span>
+            <div 
+              className="px-3 py-1 rounded inline-block"
+              style={{ 
+                background: 'rgba(255, 107, 157, 0.1)',
+                border: '1px solid rgba(255, 107, 157, 0.3)'
+              }}
+            >
+              <span className="font-digital text-xs tracking-widest text-[#ff6b9d]">ORIGINAL</span>
             </div>
             
             <div 
-              className="relative aspect-square rounded-xl overflow-hidden boombox-body cursor-pointer group"
+              className="relative aspect-square rounded-xl overflow-hidden cursor-pointer group"
+              style={{
+                background: 'linear-gradient(145deg, rgba(255, 107, 157, 0.1) 0%, rgba(26, 0, 51, 0.8) 100%)',
+                border: '1px solid rgba(255, 107, 157, 0.2)',
+              }}
               onClick={() => !originalImage && fileInputRef.current?.click()}
             >
               <input
@@ -183,13 +193,13 @@ export function TransformationStudio({ scenario, onBack, userId }: Transformatio
                   />
                   <button
                     onClick={(e) => { e.stopPropagation(); clearImage(); }}
-                    className="absolute top-4 right-4 p-2 bg-background/80 rounded-full hover:bg-background transition-colors"
+                    className="absolute top-4 right-4 p-2 bg-[#0a0015]/80 rounded-full hover:bg-[#0a0015] transition-colors"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-4 h-4 text-foreground" />
                   </button>
                 </>
               ) : (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-muted-foreground group-hover:text-primary transition-colors">
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-muted-foreground group-hover:text-[#ff6b9d] transition-colors">
                   <div className="w-20 h-20 rounded-full border-2 border-dashed border-current flex items-center justify-center">
                     <Upload className="w-8 h-8" />
                   </div>
@@ -201,42 +211,59 @@ export function TransformationStudio({ scenario, onBack, userId }: Transformatio
               )}
             </div>
 
-            {/* Camera button for mobile */}
-            <div className="flex gap-2">
-              <Button
-                variant="chrome"
-                className="flex-1"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Upload Photo
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              className="w-full border-[#ff6b9d]/30 hover:bg-[#ff6b9d]/10"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Upload Photo
+            </Button>
           </div>
 
           {/* Transformed Image */}
           <div className="space-y-4">
-            <div className="cassette-window p-1">
-              <span className="font-digital text-xs tracking-widest">TRANSFORMED</span>
+            <div 
+              className="px-3 py-1 rounded inline-block"
+              style={{ 
+                background: 'rgba(255, 107, 157, 0.1)',
+                border: '1px solid rgba(255, 107, 157, 0.3)'
+              }}
+            >
+              <span className="font-digital text-xs tracking-widest text-[#ff6b9d]">TRANSFORMED</span>
             </div>
             
-            <div className="relative aspect-square rounded-xl overflow-hidden boombox-body">
+            <div 
+              className="relative aspect-square rounded-xl overflow-hidden"
+              style={{
+                background: 'linear-gradient(145deg, rgba(255, 107, 157, 0.1) 0%, rgba(26, 0, 51, 0.8) 100%)',
+                border: '1px solid rgba(255, 107, 157, 0.2)',
+              }}
+            >
               {isTransforming ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
                   <div className="relative">
-                    <div className="w-20 h-20 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-                    <Sparkles className="absolute inset-0 m-auto w-8 h-8 text-primary animate-pulse" />
+                    <div className="w-20 h-20 rounded-full border-4 border-[#ff6b9d]/20 border-t-[#ff6b9d] animate-spin" />
+                    <Sparkles className="absolute inset-0 m-auto w-8 h-8 text-[#ff6b9d] animate-pulse" />
                   </div>
                   <div className="text-center">
-                    <p className="font-display text-lg led-text">Transforming...</p>
+                    <p 
+                      className="font-display text-lg"
+                      style={{
+                        background: 'linear-gradient(180deg, #ffbe76 0%, #ff6b9d 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                      }}
+                    >
+                      Transforming...
+                    </p>
                     <p className="text-sm text-muted-foreground">
                       Entering {scenario?.era} era
                     </p>
                   </div>
-                  {/* Progress bar */}
-                  <div className="w-48 h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="w-48 h-2 bg-[#1a0033] rounded-full overflow-hidden">
                     <motion.div
-                      className="h-full bg-primary"
+                      className="h-full bg-gradient-to-r from-[#ff6b9d] to-[#c44569]"
                       initial={{ width: 0 }}
                       animate={{ width: `${progress}%` }}
                       transition={{ duration: 0.3 }}
@@ -259,11 +286,9 @@ export function TransformationStudio({ scenario, onBack, userId }: Transformatio
               )}
             </div>
 
-            {/* Action buttons */}
             <div className="flex gap-2">
               <Button
-                variant="boombox"
-                className="flex-1"
+                className="flex-1 bg-gradient-to-r from-[#ff6b9d] to-[#c44569] hover:opacity-90 text-white"
                 onClick={handleTransform}
                 disabled={!originalImage || isTransforming}
               >
@@ -277,7 +302,8 @@ export function TransformationStudio({ scenario, onBack, userId }: Transformatio
               
               {transformedImage && (
                 <Button
-                  variant="chrome"
+                  variant="outline"
+                  className="border-[#ff6b9d]/30 hover:bg-[#ff6b9d]/10"
                   onClick={handleDownload}
                 >
                   <Download className="w-4 h-4" />
@@ -294,7 +320,13 @@ export function TransformationStudio({ scenario, onBack, userId }: Transformatio
           transition={{ delay: 0.3 }}
           className="mt-12 text-center"
         >
-          <div className={`inline-block px-6 py-3 rounded-full bg-gradient-to-r ${scenario?.gradient} border border-border/20`}>
+          <div 
+            className="inline-block px-6 py-3 rounded-full"
+            style={{
+              background: 'rgba(255, 107, 157, 0.1)',
+              border: '1px solid rgba(255, 107, 157, 0.2)',
+            }}
+          >
             <p className="text-sm text-foreground/80">
               {scenario?.description}
             </p>
