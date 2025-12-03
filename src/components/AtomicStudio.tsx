@@ -119,7 +119,7 @@ export function AtomicStudio({ scenario, onBack, userId }: AtomicStudioProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen relative z-10 px-4 py-8"
+      className="min-h-screen relative z-10 px-4 py-8 pb-24"
     >
       <div className="max-w-6xl mx-auto">
         {/* Header */}

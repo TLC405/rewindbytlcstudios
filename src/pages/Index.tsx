@@ -7,6 +7,7 @@ import { AtomicGallery } from "@/components/AtomicGallery";
 import { AtomicAuthModal } from "@/components/AtomicAuthModal";
 import { AtomicStudio } from "@/components/AtomicStudio";
 import { AtomicMusicPlayer } from "@/components/AtomicMusicPlayer";
+import { AtomicControlPanel } from "@/components/AtomicControlPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Zap } from "lucide-react";
@@ -167,15 +168,18 @@ const Index = () => {
             
             {/* Hero Section */}
             <AtomicHero />
+
+            {/* Control Panel (Desktop) */}
+            <AtomicControlPanel isProcessing={false} />
             
             {/* Gallery */}
-            <AtomicGallery 
+            <AtomicGallery
               onSelectScenario={handleScenarioSelect}
               userTransformations={userTransformations}
             />
 
-            {/* Footer */}
-            <footer className="py-16 text-center relative">
+            {/* Footer - extra padding for bottom music bar */}
+            <footer className="pt-16 pb-28 text-center relative">
               <div className="max-w-2xl mx-auto px-4">
                 <motion.div
                   initial={{ opacity: 0 }}
