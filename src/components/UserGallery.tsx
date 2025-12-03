@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Download, Trash2, ExternalLink, Loader2 } from "lucide-react";
+import { Download, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -82,7 +82,7 @@ export function UserGallery({ userId }: UserGalleryProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        <Loader2 className="w-6 h-6 animate-spin text-[#ff6b9d]" />
       </div>
     );
   }
@@ -96,14 +96,29 @@ export function UserGallery({ userId }: UserGalleryProps) {
   }
 
   return (
-    <section className="py-12 px-4">
-      <div className="max-w-6xl mx-auto">
+    <section className="relative py-12 px-4">
+      <div className="relative z-10 max-w-6xl mx-auto">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/5 mb-4">
-            <span className="font-digital text-xs tracking-widest text-primary">YOUR GALLERY</span>
+          <div 
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4"
+            style={{
+              background: 'rgba(255, 107, 157, 0.1)',
+              border: '1px solid rgba(255, 107, 157, 0.3)',
+            }}
+          >
+            <span className="font-digital text-xs tracking-widest text-[#ff6b9d]">YOUR GALLERY</span>
           </div>
           <h2 className="font-display text-3xl text-foreground">
-            Legendary <span className="led-text">Moments</span>
+            Legendary{' '}
+            <span 
+              style={{
+                background: 'linear-gradient(180deg, #ffbe76 0%, #ff6b9d 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Moments
+            </span>
           </h2>
         </div>
 
@@ -114,7 +129,10 @@ export function UserGallery({ userId }: UserGalleryProps) {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05 }}
-              className="group relative aspect-square rounded-xl overflow-hidden boombox-body"
+              className="group relative aspect-square rounded-xl overflow-hidden"
+              style={{
+                border: '1px solid rgba(255, 107, 157, 0.2)',
+              }}
             >
               {item.transformed_image_url && (
                 <img
@@ -125,12 +143,12 @@ export function UserGallery({ userId }: UserGalleryProps) {
               )}
               
               {/* Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0015] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                 <div className="absolute bottom-0 left-0 right-0 p-3">
                   <p className="font-display text-sm text-foreground mb-1">
                     {item.scenarios?.title}
                   </p>
-                  <p className="font-digital text-[10px] text-muted-foreground">
+                  <p className="font-digital text-[10px] text-[#ff6b9d]">
                     {item.scenarios?.era}
                   </p>
                   
@@ -138,7 +156,7 @@ export function UserGallery({ userId }: UserGalleryProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 bg-background/50 hover:bg-background"
+                      className="h-8 w-8 bg-[#0a0015]/50 hover:bg-[#ff6b9d]/20"
                       onClick={() => item.transformed_image_url && handleDownload(item.transformed_image_url, item.scenarios?.title || 'transformation')}
                     >
                       <Download className="w-3 h-3" />
@@ -146,7 +164,7 @@ export function UserGallery({ userId }: UserGalleryProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 bg-background/50 hover:bg-destructive hover:text-destructive-foreground"
+                      className="h-8 w-8 bg-[#0a0015]/50 hover:bg-red-500/20 hover:text-red-400"
                       onClick={() => handleDelete(item.id)}
                     >
                       <Trash2 className="w-3 h-3" />

@@ -43,13 +43,28 @@ export function NavBar({ user, onAuthChange }: NavBarProps) {
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/50"
+        className="fixed top-0 left-0 right-0 z-40 backdrop-blur-lg border-b border-[#ff6b9d]/10"
+        style={{
+          background: 'rgba(10, 0, 21, 0.8)',
+        }}
       >
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="cassette-window px-3 py-1">
-              <span className="font-digital text-sm tracking-widest led-text">REWIND</span>
+            <div 
+              className="px-3 py-1 rounded border border-[#ff6b9d]/30"
+              style={{ background: 'rgba(255, 107, 157, 0.1)' }}
+            >
+              <span 
+                className="font-digital text-sm tracking-widest"
+                style={{
+                  background: 'linear-gradient(180deg, #ffbe76 0%, #ff6b9d 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
+                REWIND
+              </span>
             </div>
             <span className="hidden sm:block text-xs text-muted-foreground">
               TLC Studios
@@ -61,15 +76,15 @@ export function NavBar({ user, onAuthChange }: NavBarProps) {
             {user ? (
               <>
                 {/* Credits */}
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
-                  <Coins className="w-4 h-4 text-primary" />
-                  <span className="font-digital text-xs">{credits}</span>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#ff6b9d]/10 border border-[#ff6b9d]/20">
+                  <Coins className="w-4 h-4 text-[#ff6b9d]" />
+                  <span className="font-digital text-xs text-[#ff6b9d]">{credits}</span>
                 </div>
                 
                 {/* User info */}
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center">
-                    <User className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ff6b9d] to-[#c44569] flex items-center justify-center">
+                    <User className="w-4 h-4 text-white" />
                   </div>
                 </div>
                 
@@ -77,7 +92,7 @@ export function NavBar({ user, onAuthChange }: NavBarProps) {
                   variant="ghost"
                   size="sm"
                   onClick={handleSignOut}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground hover:bg-[#ff6b9d]/10"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
                   Sign Out
@@ -85,9 +100,9 @@ export function NavBar({ user, onAuthChange }: NavBarProps) {
               </>
             ) : (
               <Button
-                variant="boombox"
                 size="sm"
                 onClick={() => setShowAuthModal(true)}
+                className="bg-gradient-to-r from-[#ff6b9d] to-[#c44569] hover:opacity-90 text-white"
               >
                 Get Started
               </Button>
@@ -96,7 +111,7 @@ export function NavBar({ user, onAuthChange }: NavBarProps) {
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-2"
+            className="md:hidden p-2 text-foreground"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (
@@ -113,18 +128,19 @@ export function NavBar({ user, onAuthChange }: NavBarProps) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-border/50 bg-background"
+            className="md:hidden border-t border-[#ff6b9d]/10"
+            style={{ background: 'rgba(10, 0, 21, 0.95)' }}
           >
             <div className="p-4 space-y-4">
               {user ? (
                 <>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center">
-                      <User className="w-5 h-5" />
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ff6b9d] to-[#c44569] flex items-center justify-center">
+                      <User className="w-5 h-5 text-white" />
                     </div>
                     <div>
                       <p className="font-medium text-foreground">Welcome back!</p>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1 text-xs text-[#ff6b9d]">
                         <Coins className="w-3 h-3" />
                         <span>{credits} credits</span>
                       </div>
@@ -132,7 +148,7 @@ export function NavBar({ user, onAuthChange }: NavBarProps) {
                   </div>
                   <Button
                     variant="ghost"
-                    className="w-full justify-start"
+                    className="w-full justify-start hover:bg-[#ff6b9d]/10"
                     onClick={handleSignOut}
                   >
                     <LogOut className="w-4 h-4 mr-2" />
@@ -141,8 +157,7 @@ export function NavBar({ user, onAuthChange }: NavBarProps) {
                 </>
               ) : (
                 <Button
-                  variant="boombox"
-                  className="w-full"
+                  className="w-full bg-gradient-to-r from-[#ff6b9d] to-[#c44569] hover:opacity-90 text-white"
                   onClick={() => {
                     setShowAuthModal(true);
                     setMobileMenuOpen(false);
