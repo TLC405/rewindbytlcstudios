@@ -173,98 +173,113 @@ serve(async (req) => {
 });
 
 function buildLegendaryPrompt(scenario: { title: string; era: string; prompt_template: string }): string {
-  // Random expression and pose for variety
   const expressions = [
-    "genuine warm smile, eyes slightly crinkled with joy",
-    "confident slight smirk, one eyebrow slightly raised",
-    "relaxed natural expression, soft friendly gaze", 
-    "excited wide smile showing teeth, eyes bright",
-    "cool confident look, subtle knowing smile",
-    "laughing mid-moment, pure genuine happiness"
+    "genuine warm smile with eyes crinkled in joy",
+    "confident knowing smirk with relaxed gaze",
+    "mid-laugh captured in a candid moment",
+    "cool collected expression radiating charisma",
+    "excited bright-eyed look of amazement",
+    "peaceful content smile among legends"
   ];
   
   const poses = [
-    "standing confidently with relaxed posture",
-    "leaning casually like hanging with friends",
-    "turned slightly with natural body language",
-    "positioned prominently in the center",
-    "posed naturally as if caught in a candid moment",
-    "standing proud with open welcoming stance"
+    "standing center with confident presence",
+    "leaning in like sharing a secret with friends",
+    "arm casually around a celebrity's shoulder",
+    "seated in prime position among the icons",
+    "caught mid-gesture in animated conversation",
+    "positioned prominently as the guest of honor"
   ];
+
+  const eraHairstyles: Record<string, string[]> = {
+    '1950s': ['slicked-back pompadour', 'neat side-parted style', 'classic rockabilly quiff', 'vintage finger waves'],
+    '1960s': ['natural afro', 'mod bowl cut', 'bouffant style', 'sleek Jackie Kennedy-inspired'],
+    '1970s': ['feathered Farrah Fawcett style', 'full disco afro', 'shaggy layers', 'center-parted flowing'],
+    '1980s': ['big voluminous hair', 'crimped and teased style', 'mullet', 'asymmetric new wave cut'],
+    '1990s': ['fresh fade', 'Rachel haircut layers', 'box braids', 'curtain bangs'],
+    '2000s': ['sleek straightened', 'frosted tips', 'chunky highlights', 'emo side-swept fringe'],
+    '2010s': ['modern undercut', 'beachy waves', 'top knot', 'natural textured curls']
+  };
 
   const randomExpression = expressions[Math.floor(Math.random() * expressions.length)];
   const randomPose = poses[Math.floor(Math.random() * poses.length)];
+  const eraStyles = eraHairstyles[scenario.era] || eraHairstyles['1980s'];
+  const randomHairstyle = eraStyles[Math.floor(Math.random() * eraStyles.length)];
 
-  return `🔒 FACE-LOCK LEGENDARY TRANSFORMATION 🔒
+  return `⚡ LEGENDARY TIME-TRAVEL TRANSFORMATION ⚡
 
-═══════════════════════════════════════════════
-ABSOLUTE RULE #1: FACE PRESERVATION IS SACRED
-═══════════════════════════════════════════════
+════════════════════════════════════════════════════════════════
+🔒 RULE #1: FACE-LOCK PROTOCOL (ABSOLUTELY NON-NEGOTIABLE)
+════════════════════════════════════════════════════════════════
 
-Study the face in this photo with EXTREME precision. This is YOUR SUBJECT.
-You MUST preserve with 100% accuracy:
-✓ EXACT eye shape, eye color, eye spacing, eye size
-✓ PRECISE nose structure - bridge, tip, nostrils, proportions  
-✓ ACCURATE mouth shape - lip thickness, cupid's bow, width
-✓ FAITHFUL jawline, chin shape, cheekbone structure
-✓ EXACT skin tone, skin texture, any visible marks/features
-✓ Any facial hair (beard/mustache) - preserve EXACTLY as shown
-✓ Face shape and proportions - DO NOT alter
+Analyze the uploaded photo. This person is YOUR SUBJECT - the time traveler.
 
-The face you see is the ONLY face that matters. Lock it in your memory.
+PRESERVE WITH 100% PIXEL-PERFECT ACCURACY:
+✓ Exact eye shape, color, spacing, lid structure
+✓ Precise nose - bridge, tip, nostrils, all proportions
+✓ Exact lip shape, thickness, natural color
+✓ Jawline, chin, cheekbones - every contour
+✓ Skin tone, texture, pores, any marks/moles/freckles
+✓ Facial hair if present - exact pattern and density
+✓ Ears, forehead shape, face proportions
 
-═══════════════════════════════════════════════
-ABSOLUTE RULE #2: REMOVE EVERYTHING ELSE
-═══════════════════════════════════════════════
+This face is SACRED. Do not modify ANY facial feature.
 
-🚫 COMPLETELY IGNORE from the original photo:
-- Any hat, cap, headwear - REMOVE IT
-- Any glasses or sunglasses - REMOVE THEM (unless period-appropriate)
-- Current hairstyle - REPLACE with era-appropriate style
-- Current clothing - REPLACE completely
-- Body shape/build - GENERATE new body for the scene
-- Background - REPLACE completely
-- Accessories, jewelry - REPLACE with era-appropriate items
+════════════════════════════════════════════════════════════════
+🚫 RULE #2: MANDATORY REMOVAL (STRIP FROM ORIGINAL PHOTO)
+════════════════════════════════════════════════════════════════
 
-YOU ARE ONLY KEEPING THE FACE. Everything else is generated fresh.
+REMOVE AND REPLACE - DO NOT TRANSFER FROM ORIGINAL:
 
-═══════════════════════════════════════════════
-THE LEGENDARY SCENE: ${scenario.title}
-ERA: ${scenario.era}
-═══════════════════════════════════════════════
+❌ HAT/CAP/HEADWEAR → REMOVE 100%. Show full head with new hair.
+❌ CURRENT HAIRSTYLE → REMOVE. Generate ${randomHairstyle} for ${scenario.era}
+❌ GLASSES/SUNGLASSES → REMOVE (unless vintage style fits scene)
+❌ ALL CLOTHING → REMOVE. Generate fresh ${scenario.era} fashion
+❌ BODY SHAPE → GENERATE new natural body for scene
+❌ ACCESSORIES → REMOVE. Generate era-appropriate items only
+❌ BACKGROUND → REMOVE. Use scene setting only
+❌ POSE/POSTURE → GENERATE fresh natural pose
+
+YOU KEEP ONLY THE FACE. Everything else is freshly generated for ${scenario.era}.
+
+════════════════════════════════════════════════════════════════
+🌟 THE LEGENDARY MOMENT: ${scenario.title}
+🕐 ERA: ${scenario.era}
+════════════════════════════════════════════════════════════════
 
 ${scenario.prompt_template}
 
-═══════════════════════════════════════════════
-YOUR SUBJECT'S APPEARANCE IN THIS SCENE
-═══════════════════════════════════════════════
+════════════════════════════════════════════════════════════════
+✨ YOUR SUBJECT IN THIS SCENE
+════════════════════════════════════════════════════════════════
 
-Expression: ${randomExpression}
-Pose: ${randomPose}
-Hair: Give them a natural ${scenario.era} era-appropriate hairstyle
-Outfit: Dress them in authentic ${scenario.era} fashion that fits the scene
-Body: Generate an appropriate body naturally integrated into the scene
+HAIRSTYLE: ${randomHairstyle} (authentic ${scenario.era} style)
+EXPRESSION: ${randomExpression}
+POSE: ${randomPose}
+OUTFIT: Authentic ${scenario.era} fashion fitting the scene perfectly
+POSITION: YOUR SUBJECT is the STAR - center of attention, main focus
 
-═══════════════════════════════════════════════
-CELEBRITY POSITIONING RULES
-═══════════════════════════════════════════════
+════════════════════════════════════════════════════════════════
+👥 CELEBRITY GROUP COMPOSITION RULES
+════════════════════════════════════════════════════════════════
 
-⚠️ CRITICAL: Each celebrity appears ONLY ONCE
-⚠️ Each celebrity has their OWN UNIQUE pose and position
-⚠️ Your subject is THE MAIN FOCUS - position them prominently
-⚠️ Celebrities are SUPPORTING characters around your subject
-⚠️ Make sure every person looks like a DISTINCT individual
+⚠️ EVERY celebrity is UNIQUE - NO DUPLICATES EVER
+⚠️ Each celebrity has DISTINCT pose, action, expression
+⚠️ YOUR SUBJECT is THE MAIN CHARACTER - celebrities surround them
+⚠️ All figures share IDENTICAL lighting, film grain, atmosphere
+⚠️ Natural group dynamics - like real friends, not staged
+⚠️ Each person clearly distinguishable as individual
 
-═══════════════════════════════════════════════
-FINAL OUTPUT REQUIREMENTS
-═══════════════════════════════════════════════
+════════════════════════════════════════════════════════════════
+📸 FINAL OUTPUT: ULTRA-REALISTIC VINTAGE PHOTOGRAPH
+════════════════════════════════════════════════════════════════
 
-• Ultra-photorealistic quality - this should look like a REAL vintage photo
-• Shot on period-appropriate film camera
-• Natural ${scenario.era} era lighting and color grading
-• Cinematic composition with your subject as the star
-• The face MUST be recognizably the same person from the input photo
-• Everyone in the scene looks like real humans in the same space
+• Shot on authentic ${scenario.era} film camera
+• Period-correct color grading and lighting
+• Natural film grain and texture
+• Photorealistic - should look like REAL archival photo
+• YOUR SUBJECT's face is 100% recognizable from input
+• Composition: YOUR SUBJECT prominently featured as the time traveler among legends
 
-CREATE THIS LEGENDARY MOMENT NOW. The subject's face is LOCKED. Generate everything else fresh for ${scenario.era}.`;
+CREATE THIS LEGENDARY MOMENT. Face is LOCKED. Hair, clothes, body = FRESH for ${scenario.era}.`;
 }
