@@ -42,10 +42,11 @@ serve(async (req) => {
 
     console.log(`Using scenario: ${scenario.title}`);
 
-    // Build the atomic identity transformation prompt
-    const atomicPrompt = buildAtomicPrompt(scenario.prompt_template);
+    // Build the LEGENDARY face-lock prompt
+    const legendaryPrompt = buildLegendaryPrompt(scenario);
 
-    console.log('Calling Lovable AI for image generation...');
+    console.log('Calling Lovable AI for LEGENDARY transformation...');
+    console.log('Prompt preview:', legendaryPrompt.substring(0, 500));
 
     // Call Lovable AI with image editing capability
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -62,7 +63,7 @@ serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: atomicPrompt
+                text: legendaryPrompt
               },
               {
                 type: "image_url",
@@ -96,6 +97,7 @@ serve(async (req) => {
     const generatedImageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
     
     if (!generatedImageUrl) {
+      console.error('No image in response:', JSON.stringify(data).substring(0, 500));
       throw new Error('No image generated from AI');
     }
 
@@ -130,7 +132,7 @@ serve(async (req) => {
         .update({
           transformed_image_url: transformedImageUrl,
           status: 'completed',
-          prompt_used: atomicPrompt
+          prompt_used: legendaryPrompt.substring(0, 5000)
         })
         .eq('id', transformationId);
     }
@@ -149,12 +151,12 @@ serve(async (req) => {
         .eq('user_id', userId);
     }
 
-    console.log('Transformation completed successfully');
+    console.log('LEGENDARY transformation completed successfully');
 
     return new Response(JSON.stringify({ 
       success: true,
       transformedImageUrl,
-      message: data.choices?.[0]?.message?.content || 'Transformation complete!'
+      message: data.choices?.[0]?.message?.content || 'Legendary transformation complete!'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -170,34 +172,99 @@ serve(async (req) => {
   }
 });
 
-function buildAtomicPrompt(scenarioTemplate: string): string {
-  return `ATOMIC IDENTITY & ERA TRANSFORMATION PROTOCOL
+function buildLegendaryPrompt(scenario: { title: string; era: string; prompt_template: string }): string {
+  // Random expression and pose for variety
+  const expressions = [
+    "genuine warm smile, eyes slightly crinkled with joy",
+    "confident slight smirk, one eyebrow slightly raised",
+    "relaxed natural expression, soft friendly gaze", 
+    "excited wide smile showing teeth, eyes bright",
+    "cool confident look, subtle knowing smile",
+    "laughing mid-moment, pure genuine happiness"
+  ];
+  
+  const poses = [
+    "standing confidently with relaxed posture",
+    "leaning casually like hanging with friends",
+    "turned slightly with natural body language",
+    "positioned prominently in the center",
+    "posed naturally as if caught in a candid moment",
+    "standing proud with open welcoming stance"
+  ];
 
-CRITICAL DIRECTIVE - HYPER-ACCURATE FACIAL INTEGRITY:
-You MUST treat the face in the provided image as the "Reference Person".
-Preserve ALL facial features with PIXEL-PERFECT accuracy:
-- Exact eye shape, color, spacing
-- Precise nose structure and proportions
-- Accurate lip shape and fullness
-- Faithful skin texture and complexion
-- Any facial hair (beard, mustache) preserved exactly
-- Ear shape if visible
-The face is SACRED and IMMUTABLE. No stylization, no aging, no modification.
+  const randomExpression = expressions[Math.floor(Math.random() * expressions.length)];
+  const randomPose = poses[Math.floor(Math.random() * poses.length)];
 
-ZERO-TOLERANCE BODY & ATTIRE OVERRIDE:
-STRICTLY FORBIDDEN: Do NOT transfer ANY clothing, accessories, hairstyle, or body type from the original photo.
-The body and outfit MUST be generated from scratch according to the scenario.
-The ONLY element from the original photo is the face.
+  return `🔒 FACE-LOCK LEGENDARY TRANSFORMATION 🔒
 
-LEGENDARY SCENARIO:
-${scenarioTemplate}
+═══════════════════════════════════════════════
+ABSOLUTE RULE #1: FACE PRESERVATION IS SACRED
+═══════════════════════════════════════════════
 
-EXECUTION:
-1. Extract the Reference Person's face with surgical precision
-2. Generate an entirely new body, outfit, and pose matching the scenario
-3. Seamlessly composite the preserved face onto the new body
-4. Apply era-appropriate lighting, color grading, and atmosphere
-5. Ensure photorealistic quality with cinematic composition
+Study the face in this photo with EXTREME precision. This is YOUR SUBJECT.
+You MUST preserve with 100% accuracy:
+✓ EXACT eye shape, eye color, eye spacing, eye size
+✓ PRECISE nose structure - bridge, tip, nostrils, proportions  
+✓ ACCURATE mouth shape - lip thickness, cupid's bow, width
+✓ FAITHFUL jawline, chin shape, cheekbone structure
+✓ EXACT skin tone, skin texture, any visible marks/features
+✓ Any facial hair (beard/mustache) - preserve EXACTLY as shown
+✓ Face shape and proportions - DO NOT alter
 
-Generate this legendary transformation now.`;
+The face you see is the ONLY face that matters. Lock it in your memory.
+
+═══════════════════════════════════════════════
+ABSOLUTE RULE #2: REMOVE EVERYTHING ELSE
+═══════════════════════════════════════════════
+
+🚫 COMPLETELY IGNORE from the original photo:
+- Any hat, cap, headwear - REMOVE IT
+- Any glasses or sunglasses - REMOVE THEM (unless period-appropriate)
+- Current hairstyle - REPLACE with era-appropriate style
+- Current clothing - REPLACE completely
+- Body shape/build - GENERATE new body for the scene
+- Background - REPLACE completely
+- Accessories, jewelry - REPLACE with era-appropriate items
+
+YOU ARE ONLY KEEPING THE FACE. Everything else is generated fresh.
+
+═══════════════════════════════════════════════
+THE LEGENDARY SCENE: ${scenario.title}
+ERA: ${scenario.era}
+═══════════════════════════════════════════════
+
+${scenario.prompt_template}
+
+═══════════════════════════════════════════════
+YOUR SUBJECT'S APPEARANCE IN THIS SCENE
+═══════════════════════════════════════════════
+
+Expression: ${randomExpression}
+Pose: ${randomPose}
+Hair: Give them a natural ${scenario.era} era-appropriate hairstyle
+Outfit: Dress them in authentic ${scenario.era} fashion that fits the scene
+Body: Generate an appropriate body naturally integrated into the scene
+
+═══════════════════════════════════════════════
+CELEBRITY POSITIONING RULES
+═══════════════════════════════════════════════
+
+⚠️ CRITICAL: Each celebrity appears ONLY ONCE
+⚠️ Each celebrity has their OWN UNIQUE pose and position
+⚠️ Your subject is THE MAIN FOCUS - position them prominently
+⚠️ Celebrities are SUPPORTING characters around your subject
+⚠️ Make sure every person looks like a DISTINCT individual
+
+═══════════════════════════════════════════════
+FINAL OUTPUT REQUIREMENTS
+═══════════════════════════════════════════════
+
+• Ultra-photorealistic quality - this should look like a REAL vintage photo
+• Shot on period-appropriate film camera
+• Natural ${scenario.era} era lighting and color grading
+• Cinematic composition with your subject as the star
+• The face MUST be recognizably the same person from the input photo
+• Everyone in the scene looks like real humans in the same space
+
+CREATE THIS LEGENDARY MOMENT NOW. The subject's face is LOCKED. Generate everything else fresh for ${scenario.era}.`;
 }
