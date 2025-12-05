@@ -7,17 +7,16 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: "1rem",
       screens: {
-        "2xl": "1400px",
+        "2xl": "1200px",
       },
     },
     extend: {
       fontFamily: {
-        display: ['Bebas Neue', 'sans-serif'],
-        tech: ['Orbitron', 'sans-serif'],
-        sans: ['Space Grotesk', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        display: ['Syne', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
+        mono: ['DM Mono', 'monospace'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -63,21 +62,19 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        void: "hsl(var(--void))",
-        midnight: "hsl(var(--midnight))",
-        deep: "hsl(var(--deep))",
-        surface: "hsl(var(--surface))",
-        electric: "hsl(var(--electric))",
-        "neon-pink": "hsl(var(--neon-pink))",
-        "neon-purple": "hsl(var(--neon-purple))",
-        "film-white": "hsl(var(--film-white))",
-        "film-black": "hsl(var(--film-black))",
-        gold: "hsl(var(--gold))",
+        cream: "hsl(var(--cream))",
+        charcoal: "hsl(var(--charcoal))",
+        terracotta: "hsl(var(--terracotta))",
+        sage: "hsl(var(--sage))",
+        navy: "hsl(var(--navy))",
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        "2xl": "1rem",
+        "3xl": "1.5rem",
+        "4xl": "2rem",
       },
       keyframes: {
         "accordion-down": {

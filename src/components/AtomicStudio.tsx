@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, ArrowLeft, Download, Sparkles, Image as ImageIcon, RotateCcw, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,14 +15,26 @@ interface AtomicStudioProps {
   scenario: Scenario;
   onBack: () => void;
   userId: string;
+  preUploadedPhoto?: string | null;
 }
 
-export function AtomicStudio({ scenario, onBack, userId }: AtomicStudioProps) {
-  const [originalImage, setOriginalImage] = useState<string | null>(null);
+export function AtomicStudio({ scenario, onBack, userId, preUploadedPhoto }: AtomicStudioProps) {
+  const [originalImage, setOriginalImage] = useState<string | null>(preUploadedPhoto || null);
   const [transformedImage, setTransformedImage] = useState<string | null>(null);
   const [isTransforming, setIsTransforming] = useState(false);
   const [progress, setProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-start transform if we have a pre-uploaded photo
+  useEffect(() => {
+    if (preUploadedPhoto && !transformedImage && !isTransforming) {
+      // Small delay for smooth UX
+      const timer = setTimeout(() => {
+        handleTransform();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [preUploadedPhoto]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -119,85 +131,75 @@ export function AtomicStudio({ scenario, onBack, userId }: AtomicStudioProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen relative z-10 px-4 py-8 pb-24"
+      className="min-h-screen relative px-4 py-6 md:py-8 pb-24"
     >
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6 md:mb-8">
           <motion.button
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             onClick={onBack}
-            className="flex items-center gap-2 text-muted-foreground hover:text-film-white transition-colors group"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-            <span className="font-tech text-sm tracking-wider">Back</span>
+            <ArrowLeft className="w-5 h-5" />
+            <span className="text-sm font-medium">Back</span>
           </motion.button>
 
           <motion.div 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center"
+            className="text-center flex-1 mx-4"
           >
-            <div className="era-badge mb-2 inline-flex">
-              <Sparkles className="w-3 h-3 text-primary mr-2" />
-              <span className="text-primary">{scenario.era}</span>
-            </div>
-            <h2 className="font-display text-2xl md:text-3xl text-film-white">{scenario.title}</h2>
+            <span className="era-tag mb-1">{scenario.era}</span>
+            <h2 className="font-display text-lg md:text-2xl font-bold text-foreground mt-2 line-clamp-1">
+              {scenario.title}
+            </h2>
           </motion.div>
 
-          <div className="w-20" />
+          <div className="w-16" />
         </div>
 
-        {/* Main Content */}
-        <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+        {/* Main Content - Stacked on mobile, side by side on desktop */}
+        <div className="grid md:grid-cols-2 gap-6 md:gap-8">
           {/* Upload Area */}
           <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="space-y-4"
           >
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-primary" />
-              <span className="font-tech text-xs tracking-widest text-primary uppercase">Original</span>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-muted-foreground" />
+              <span className="text-xs tracking-wider text-muted-foreground uppercase">Your Photo</span>
             </div>
             
             <motion.div
-              whileHover={{ scale: 1.01 }}
-              className="relative aspect-[3/4] rounded-2xl overflow-hidden cursor-pointer group"
+              className="relative aspect-[3/4] rounded-2xl overflow-hidden cursor-pointer group card-premium"
               onClick={() => fileInputRef.current?.click()}
             >
-              <div className="absolute inset-0 card-atomic" />
-              
               {originalImage ? (
                 <>
-                  <img src={originalImage} alt="Original" className="relative z-10 w-full h-full object-cover" />
-                  <div className="absolute inset-0 z-20 bg-void/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="font-tech text-sm text-film-white">Click to change</span>
+                  <img src={originalImage} alt="Original" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="text-sm text-foreground font-medium">Tap to change</span>
                   </div>
                 </>
               ) : (
-                <div className="relative z-10 h-full flex flex-col items-center justify-center gap-4 p-8">
+                <div className="h-full flex flex-col items-center justify-center gap-4 p-8">
                   <motion.div
-                    animate={{ y: [0, -10, 0] }}
+                    animate={{ y: [0, -8, 0] }}
                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    className="w-20 h-20 rounded-2xl border-2 border-dashed border-primary/40 flex items-center justify-center"
+                    className="w-16 h-16 rounded-full bg-muted flex items-center justify-center"
                   >
-                    <Upload className="w-8 h-8 text-primary/60" />
+                    <Upload className="w-7 h-7 text-muted-foreground" />
                   </motion.div>
                   <div className="text-center">
-                    <p className="text-film-white/80 font-medium mb-1">Upload your photo</p>
+                    <p className="text-foreground font-medium mb-1">Upload your photo</p>
                     <p className="text-xs text-muted-foreground">JPG, PNG up to 10MB</p>
                   </div>
                 </div>
               )}
-
-              {/* Corner accents */}
-              <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-primary/40 z-30" />
-              <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-primary/40 z-30" />
-              <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-primary/40 z-30" />
-              <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-primary/40 z-30" />
             </motion.div>
 
             <input
@@ -208,57 +210,42 @@ export function AtomicStudio({ scenario, onBack, userId }: AtomicStudioProps) {
               className="hidden"
             />
 
-            {originalImage && !transformedImage && (
+            {originalImage && !transformedImage && !isTransforming && (
               <motion.button
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 onClick={handleTransform}
                 disabled={isTransforming}
-                className="w-full btn-atomic flex items-center justify-center gap-3 disabled:opacity-50"
+                className="w-full btn-primary flex items-center justify-center gap-3"
               >
-                {isTransforming ? (
-                  <>
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      className="w-5 h-5 border-2 border-void/30 border-t-void rounded-full"
-                    />
-                    <span>Transforming... {Math.round(progress)}%</span>
-                  </>
-                ) : (
-                  <>
-                    <Zap className="w-5 h-5" />
-                    <span>Transform</span>
-                  </>
-                )}
+                <Sparkles className="w-5 h-5" />
+                <span>Transform</span>
               </motion.button>
             )}
           </motion.div>
 
           {/* Result Area */}
           <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             className="space-y-4"
           >
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-accent" />
-              <span className="font-tech text-xs tracking-widest text-accent uppercase">Transformed</span>
+              <span className="text-xs tracking-wider text-muted-foreground uppercase">Result</span>
             </div>
             
-            <div className="relative aspect-[3/4] rounded-2xl overflow-hidden">
-              <div className="absolute inset-0 card-atomic" />
-              
+            <div className="relative aspect-[3/4] rounded-2xl overflow-hidden card-premium">
               <AnimatePresence mode="wait">
                 {transformedImage ? (
                   <motion.img
                     key="result"
-                    initial={{ opacity: 0, scale: 1.1 }}
+                    initial={{ opacity: 0, scale: 1.05 }}
                     animate={{ opacity: 1, scale: 1 }}
                     src={transformedImage}
                     alt="Transformed"
-                    className="relative z-10 w-full h-full object-cover"
+                    className="w-full h-full object-cover"
                   />
                 ) : isTransforming ? (
                   <motion.div
@@ -266,38 +253,29 @@ export function AtomicStudio({ scenario, onBack, userId }: AtomicStudioProps) {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="relative z-10 h-full flex flex-col items-center justify-center gap-8 p-8"
+                    className="h-full flex flex-col items-center justify-center gap-6 p-8"
                   >
-                    {/* Animated rings */}
+                    {/* Simple elegant loader */}
                     <div className="relative">
                       <motion.div
                         animate={{ rotate: 360 }}
-                        transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                        className="w-24 h-24 rounded-full border-2 border-primary/30 border-t-primary"
-                      />
-                      <motion.div
-                        animate={{ rotate: -360 }}
                         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                        className="absolute inset-3 rounded-full border-2 border-accent/30 border-b-accent"
+                        className="w-16 h-16 rounded-full border-2 border-muted border-t-primary"
                       />
-                      <motion.div
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute inset-0 flex items-center justify-center"
-                      >
-                        <Zap className="w-8 h-8 text-primary" />
-                      </motion.div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Zap className="w-6 h-6 text-primary" />
+                      </div>
                     </div>
                     
                     <div className="text-center">
-                      <p className="font-display text-2xl text-film-white mb-2">REWINDING TIME</p>
-                      <p className="font-tech text-sm text-primary">{Math.round(progress)}%</p>
+                      <p className="font-display text-xl font-bold text-foreground mb-1">Rewinding...</p>
+                      <p className="text-sm text-muted-foreground">{Math.round(progress)}%</p>
                     </div>
 
                     {/* Progress bar */}
-                    <div className="w-48 h-1 bg-deep rounded-full overflow-hidden">
+                    <div className="w-40 h-1 bg-muted rounded-full overflow-hidden">
                       <motion.div
-                        className="h-full bg-gradient-to-r from-primary to-accent"
+                        className="h-full bg-primary"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
@@ -305,21 +283,15 @@ export function AtomicStudio({ scenario, onBack, userId }: AtomicStudioProps) {
                 ) : (
                   <motion.div
                     key="empty"
-                    className="relative z-10 h-full flex flex-col items-center justify-center gap-4 p-8"
+                    className="h-full flex flex-col items-center justify-center gap-4 p-8"
                   >
-                    <ImageIcon className="w-12 h-12 text-muted-foreground/30" />
+                    <ImageIcon className="w-10 h-10 text-muted-foreground/30" />
                     <p className="text-muted-foreground text-sm text-center">
-                      Your legendary transformation<br />will appear here
+                      Your transformation<br />will appear here
                     </p>
                   </motion.div>
                 )}
               </AnimatePresence>
-
-              {/* Corner accents */}
-              <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-accent/40 z-30" />
-              <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-accent/40 z-30" />
-              <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-accent/40 z-30" />
-              <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-accent/40 z-30" />
             </div>
 
             {transformedImage && (
@@ -328,7 +300,7 @@ export function AtomicStudio({ scenario, onBack, userId }: AtomicStudioProps) {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   onClick={handleDownload}
-                  className="flex-1 btn-atomic flex items-center justify-center gap-2"
+                  className="flex-1 btn-primary flex items-center justify-center gap-2"
                 >
                   <Download className="w-5 h-5" />
                   <span>Download</span>
@@ -338,7 +310,7 @@ export function AtomicStudio({ scenario, onBack, userId }: AtomicStudioProps) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
                   onClick={handleReset}
-                  className="btn-ghost flex items-center justify-center gap-2 px-4"
+                  className="btn-secondary flex items-center justify-center gap-2 px-4"
                 >
                   <RotateCcw className="w-5 h-5" />
                 </motion.button>
@@ -346,6 +318,16 @@ export function AtomicStudio({ scenario, onBack, userId }: AtomicStudioProps) {
             )}
           </motion.div>
         </div>
+
+        {/* Scene Description */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="text-center text-sm text-muted-foreground mt-8 max-w-lg mx-auto"
+        >
+          {scenario.description}
+        </motion.p>
       </div>
     </motion.div>
   );
