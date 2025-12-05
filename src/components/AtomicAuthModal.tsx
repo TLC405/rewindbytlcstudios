@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mail, Lock, User, Zap, ArrowRight } from "lucide-react";
+import { X, Mail, Lock, User, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -61,45 +61,33 @@ export function AtomicAuthModal({ isOpen, onClose, onSuccess }: AtomicAuthModalP
           onClick={onClose}
         >
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-void/90 backdrop-blur-xl" />
+          <div className="absolute inset-0 bg-background/95 backdrop-blur-xl" />
 
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ duration: 0.2 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-md"
+            className="relative w-full max-w-sm"
           >
-            <div className="card-atomic p-8">
+            <div className="card-premium p-6 md:p-8">
               {/* Close button */}
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 text-film-white/40 hover:text-film-white transition-colors rounded-lg hover:bg-white/5"
+                className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-muted"
               >
                 <X className="w-5 h-5" />
               </button>
 
               {/* Header */}
               <div className="text-center mb-8">
-                <motion.div
-                  animate={{ 
-                    boxShadow: [
-                      "0 0 20px hsl(185 100% 50% / 0.3)",
-                      "0 0 40px hsl(185 100% 50% / 0.5)",
-                      "0 0 20px hsl(185 100% 50% / 0.3)"
-                    ]
-                  }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="w-16 h-16 mx-auto mb-4 rounded-2xl border border-primary/40 flex items-center justify-center bg-primary/10"
-                >
-                  <Zap className="w-8 h-8 text-primary" />
-                </motion.div>
-                <h2 className="font-display text-3xl text-film-white mb-2">
+                <h2 className="font-display text-2xl font-bold text-foreground mb-2">
                   {isLogin ? 'Welcome Back' : 'Join Rewind'}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {isLogin ? 'Sign in to continue your journey' : 'Create an account to start transforming'}
+                  {isLogin ? 'Sign in to continue' : 'Create your account'}
                 </p>
               </div>
 
@@ -107,38 +95,38 @@ export function AtomicAuthModal({ isOpen, onClose, onSuccess }: AtomicAuthModalP
               <form onSubmit={handleSubmit} className="space-y-4">
                 {!isLogin && (
                   <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input
                       type="text"
                       placeholder="Display Name"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
-                      className="input-atomic pl-12"
+                      className="input-premium pl-11"
                       required={!isLogin}
                     />
                   </div>
                 )}
 
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <input
                     type="email"
                     placeholder="Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="input-atomic pl-12"
+                    className="input-premium pl-11"
                     required
                   />
                 </div>
 
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <input
                     type="password"
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="input-atomic pl-12"
+                    className="input-premium pl-11"
                     required
                     minLength={6}
                   />
@@ -147,13 +135,13 @@ export function AtomicAuthModal({ isOpen, onClose, onSuccess }: AtomicAuthModalP
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full btn-atomic flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {loading ? (
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      className="w-5 h-5 border-2 border-void/30 border-t-void rounded-full"
+                      className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full"
                     />
                   ) : (
                     <>
@@ -168,20 +156,14 @@ export function AtomicAuthModal({ isOpen, onClose, onSuccess }: AtomicAuthModalP
               <div className="mt-6 text-center">
                 <button
                   onClick={() => setIsLogin(!isLogin)}
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {isLogin ? "Don't have an account? " : "Already have an account? "}
-                  <span className="text-primary font-medium">
+                  <span className="text-foreground font-medium">
                     {isLogin ? 'Sign Up' : 'Sign In'}
                   </span>
                 </button>
               </div>
-
-              {/* Decorative corners */}
-              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-primary/40" />
-              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-accent/40" />
-              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-accent/40" />
-              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-primary/40" />
             </div>
           </motion.div>
         </motion.div>
