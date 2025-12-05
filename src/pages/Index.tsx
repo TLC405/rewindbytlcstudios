@@ -1,30 +1,25 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AtomicBackground } from "@/components/AtomicBackground";
-import { AtomicHero } from "@/components/AtomicHero";
-import { AtomicNavBar } from "@/components/AtomicNavBar";
-import { AtomicGallery } from "@/components/AtomicGallery";
 import { AtomicAuthModal } from "@/components/AtomicAuthModal";
 import { AtomicStudio } from "@/components/AtomicStudio";
-import { AtomicMusicPlayer } from "@/components/AtomicMusicPlayer";
-import { AtomicControlPanel } from "@/components/AtomicControlPanel";
+import { TimelineHome } from "@/components/TimelineHome";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Zap } from "lucide-react";
+import { Zap, User, LogOut, Coins } from "lucide-react";
 
-interface Scenario {
+interface Scene {
   id: string;
   title: string;
-  era: string;
   description: string;
-  gradient: string;
-  accent: string;
+  era: string;
+  celebs?: string[];
 }
 
 const Index = () => {
   const [user, setUser] = useState<any>(null);
   const [credits, setCredits] = useState(0);
-  const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
+  const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userTransformations, setUserTransformations] = useState<any[]>([]);
@@ -64,12 +59,7 @@ const Index = () => {
 
     const { data: transformations } = await supabase
       .from('transformations')
-      .select(`
-        id,
-        transformed_image_url,
-        scenario_id,
-        scenarios (title, era)
-      `)
+      .select('id, transformed_image_url, scenario_id')
       .eq('user_id', userId)
       .eq('status', 'completed')
       .order('created_at', { ascending: false });
@@ -79,22 +69,22 @@ const Index = () => {
     }
   };
 
-  const handleScenarioSelect = (scenario: Scenario) => {
+  const handleSceneSelect = (scene: Scene) => {
     if (!user) {
       setShowAuthModal(true);
-      toast.info('Sign in to start transforming!');
+      toast.info('Sign in to travel back in time!');
       return;
     }
-    setSelectedScenario(scenario);
+    setSelectedScene({
+      ...scene,
+      gradient: 'from-primary/20 to-accent/20',
+      accent: 'text-primary'
+    } as any);
   };
 
-  const handleAuthChange = () => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserData(session.user.id);
-      }
-    });
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    toast.success('Signed out');
   };
 
   if (loading) {
@@ -110,11 +100,6 @@ const Index = () => {
               animate={{ rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
               className="w-20 h-20 rounded-full border-2 border-primary/30 border-t-primary mx-auto"
-            />
-            <motion.div
-              animate={{ rotate: -360 }}
-              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              className="absolute inset-2 rounded-full border-2 border-accent/30 border-b-accent"
             />
             <motion.div
               animate={{ scale: [1, 1.2, 1] }}
@@ -136,17 +121,15 @@ const Index = () => {
 
   return (
     <div className="min-h-screen text-foreground overflow-x-hidden">
-      {/* Background */}
       <AtomicBackground />
       
-      {/* Main Content */}
       <AnimatePresence mode="wait">
-        {selectedScenario ? (
+        {selectedScene ? (
           <AtomicStudio
             key="studio"
-            scenario={selectedScenario}
+            scenario={selectedScene as any}
             onBack={() => {
-              setSelectedScenario(null);
+              setSelectedScene(null);
               if (user) fetchUserData(user.id);
             }}
             userId={user?.id}
@@ -159,61 +142,74 @@ const Index = () => {
             exit={{ opacity: 0 }}
             className="relative z-10"
           >
-            {/* Navigation */}
-            <AtomicNavBar 
-              user={user} 
-              credits={credits}
-              onAuthClick={() => setShowAuthModal(true)} 
-            />
-            
-            {/* Hero Section */}
-            <AtomicHero />
+            {/* Minimal Top Bar */}
+            <nav className="fixed top-0 left-0 right-0 z-50 glass-atomic">
+              <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-primary" />
+                  <span className="font-display text-xl">
+                    <span className="text-neon">R</span>
+                    <span className="text-film-white">EWIN</span>
+                    <span className="text-neon-pink">D</span>
+                  </span>
+                </div>
 
-            {/* Control Panel (Desktop) */}
-            <AtomicControlPanel isProcessing={false} />
-            
-            {/* Gallery */}
-            <AtomicGallery
-              onSelectScenario={handleScenarioSelect}
-              userTransformations={userTransformations}
-            />
-
-            {/* Footer - extra padding for bottom music bar */}
-            <footer className="pt-16 pb-28 text-center relative">
-              <div className="max-w-2xl mx-auto px-4">
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  <div className="flex items-center justify-center gap-4 mb-4">
-                    <div className="h-px w-12 bg-gradient-to-r from-transparent to-primary/40" />
-                    <span className="font-tech text-xs tracking-[0.3em] text-muted-foreground uppercase">
-                      Powered by AI
-                    </span>
-                    <div className="h-px w-12 bg-gradient-to-l from-transparent to-accent/40" />
-                  </div>
-                  <p className="font-display text-lg text-film-white/60 mb-2">
-                    REWIND
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    © 2024 · Truth, Love & Connection
-                  </p>
-                </motion.div>
+                <div className="flex items-center gap-3">
+                  {user ? (
+                    <>
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/30">
+                        <Coins className="w-4 h-4 text-primary" />
+                        <span className="font-mono text-sm text-primary">{credits}</span>
+                      </div>
+                      <button
+                        onClick={handleSignOut}
+                        className="p-2 rounded-full hover:bg-muted transition-colors"
+                      >
+                        <LogOut className="w-4 h-4 text-muted-foreground" />
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => setShowAuthModal(true)}
+                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 hover:bg-primary/20 transition-colors"
+                    >
+                      <User className="w-4 h-4 text-primary" />
+                      <span className="text-sm text-foreground">Sign In</span>
+                    </button>
+                  )}
+                </div>
               </div>
+            </nav>
+
+            {/* Timeline Content */}
+            <div className="pt-16">
+              <TimelineHome
+                onSelectScene={handleSceneSelect}
+                userTransformations={userTransformations}
+              />
+            </div>
+
+            {/* Simple Footer */}
+            <footer className="py-8 text-center border-t border-border/30">
+              <p className="text-xs text-muted-foreground">
+                © 2024 REWIND · Powered by Truth, Love & Connection
+              </p>
             </footer>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Music Player */}
-      <AtomicMusicPlayer autoPlay={true} />
-
-      {/* Auth Modal */}
       <AtomicAuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        onSuccess={handleAuthChange}
+        onSuccess={() => {
+          supabase.auth.getSession().then(({ data: { session } }) => {
+            setUser(session?.user ?? null);
+            if (session?.user) {
+              fetchUserData(session.user.id);
+            }
+          });
+        }}
       />
     </div>
   );

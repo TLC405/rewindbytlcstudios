@@ -136,10 +136,18 @@ serve(async (req) => {
     }
 
     // Deduct credit from user
-    await supabase
+    const { data: profile } = await supabase
       .from('profiles')
-      .update({ credits: supabase.rpc('decrement_credits') })
-      .eq('user_id', userId);
+      .select('credits')
+      .eq('user_id', userId)
+      .single();
+    
+    if (profile && profile.credits > 0) {
+      await supabase
+        .from('profiles')
+        .update({ credits: profile.credits - 1 })
+        .eq('user_id', userId);
+    }
 
     console.log('Transformation completed successfully');
 
