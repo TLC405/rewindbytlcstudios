@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { X, Mail, Lock, User, ArrowRight, Key } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -10,15 +10,25 @@ interface AtomicAuthModalProps {
   onSuccess: () => void;
 }
 
+const TLC_ACCESS_CODE = "1309";
+
 export function AtomicAuthModal({ isOpen, onClose, onSuccess }: AtomicAuthModalProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [accessCode, setAccessCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate access code
+    if (accessCode !== TLC_ACCESS_CODE) {
+      toast.error("Invalid TLC access code");
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -28,7 +38,7 @@ export function AtomicAuthModal({ isOpen, onClose, onSuccess }: AtomicAuthModalP
           password,
         });
         if (error) throw error;
-        toast.success('Welcome back!');
+        toast.success('Welcome back, homie!');
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -39,7 +49,7 @@ export function AtomicAuthModal({ isOpen, onClose, onSuccess }: AtomicAuthModalP
           },
         });
         if (error) throw error;
-        toast.success('Account created! You can now sign in.');
+        toast.success('Account created! Welcome to the TLC fam.');
       }
       onSuccess();
       onClose();
@@ -84,15 +94,29 @@ export function AtomicAuthModal({ isOpen, onClose, onSuccess }: AtomicAuthModalP
               {/* Header */}
               <div className="text-center mb-8">
                 <h2 className="font-display text-2xl font-bold text-foreground mb-2">
-                  {isLogin ? 'Welcome Back' : 'Join Rewind'}
+                  {isLogin ? 'Welcome Back' : 'Join TLC Fam'}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {isLogin ? 'Sign in to continue' : 'Create your account'}
+                  {isLogin ? 'Enter your TLC access code' : 'Create your account'}
                 </p>
               </div>
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* TLC Access Code - Always Required */}
+                <div className="relative">
+                  <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="TLC Access Code"
+                    value={accessCode}
+                    onChange={(e) => setAccessCode(e.target.value)}
+                    className="input-premium pl-11"
+                    required
+                    maxLength={4}
+                  />
+                </div>
+                
                 {!isLogin && (
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

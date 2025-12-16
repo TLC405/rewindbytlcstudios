@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, ArrowLeft, ArrowRight, Camera, Sparkles, X, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { ScenePreview } from "./ScenePreview";
 
 interface Scene {
   id: string;
@@ -36,6 +37,7 @@ const DECADES: Decade[] = [
 export const TimelineHome = ({ onSelectScene, userTransformations = [] }: TimelineHomeProps) => {
   const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
   const [selectedDecade, setSelectedDecade] = useState<Decade | null>(null);
+  const [previewScene, setPreviewScene] = useState<Scene | null>(null);
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
@@ -117,13 +119,13 @@ export const TimelineHome = ({ onSelectScene, userTransformations = [] }: Timeli
             className="mb-12"
           >
             <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
-              TLC Studios
+              TLC Studios Presents
             </span>
             <h1 className="font-display text-5xl md:text-7xl font-bold text-foreground mt-2 tracking-tight">
               Rewind
             </h1>
-            <p className="text-muted-foreground mt-3 text-sm md:text-base">
-              Time-travel selfies with legends
+            <p className="text-muted-foreground mt-3 text-sm md:text-base max-w-xs mx-auto">
+              Putting TLC's hommies back in time with legends
             </p>
           </motion.div>
 
@@ -268,6 +270,21 @@ export const TimelineHome = ({ onSelectScene, userTransformations = [] }: Timeli
     );
   }
 
+  // STEP 3.5: Preview Scene (new step!)
+  if (previewScene && uploadedPhoto) {
+    return (
+      <ScenePreview
+        scene={previewScene}
+        uploadedPhoto={uploadedPhoto}
+        onEnter={() => {
+          onSelectScene(previewScene, uploadedPhoto);
+          setPreviewScene(null);
+        }}
+        onBack={() => setPreviewScene(null)}
+      />
+    );
+  }
+
   // STEP 3: Select Scene
   return (
     <div className="min-h-screen flex flex-col px-4 py-6 md:py-12">
@@ -333,7 +350,7 @@ export const TimelineHome = ({ onSelectScene, userTransformations = [] }: Timeli
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: index * 0.08 }}
-                onClick={() => onSelectScene(scene, uploadedPhoto)}
+                onClick={() => setPreviewScene(scene)}
                 className="scene-card group text-left"
               >
                 <div className="aspect-[4/3] relative overflow-hidden">
