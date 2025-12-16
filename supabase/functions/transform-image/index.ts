@@ -42,11 +42,11 @@ serve(async (req) => {
 
     console.log(`Using scenario: ${scenario.title}`);
 
-    // Build the LEGENDARY face-lock prompt
-    const legendaryPrompt = buildLegendaryPrompt(scenario);
+    // Build the ULTRA face-lock prompt
+    const ultraPrompt = buildUltraFaceLockPrompt(scenario);
 
-    console.log('Calling Lovable AI for LEGENDARY transformation...');
-    console.log('Prompt preview:', legendaryPrompt.substring(0, 500));
+    console.log('Calling Lovable AI for ULTRA transformation...');
+    console.log('Prompt preview:', ultraPrompt.substring(0, 500));
 
     // Call Lovable AI with image editing capability
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -63,7 +63,7 @@ serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: legendaryPrompt
+                text: ultraPrompt
               },
               {
                 type: "image_url",
@@ -132,7 +132,7 @@ serve(async (req) => {
         .update({
           transformed_image_url: transformedImageUrl,
           status: 'completed',
-          prompt_used: legendaryPrompt.substring(0, 5000)
+          prompt_used: ultraPrompt.substring(0, 5000)
         })
         .eq('id', transformationId);
     }
@@ -151,7 +151,7 @@ serve(async (req) => {
         .eq('user_id', userId);
     }
 
-    console.log('LEGENDARY transformation completed successfully');
+    console.log('ULTRA transformation completed successfully');
 
     return new Response(JSON.stringify({ 
       success: true,
@@ -172,114 +172,137 @@ serve(async (req) => {
   }
 });
 
-function buildLegendaryPrompt(scenario: { title: string; era: string; prompt_template: string }): string {
+function buildUltraFaceLockPrompt(scenario: { title: string; era: string; prompt_template: string }): string {
+  // Random expressions for variety
   const expressions = [
-    "genuine warm smile with eyes crinkled in joy",
-    "confident knowing smirk with relaxed gaze",
-    "mid-laugh captured in a candid moment",
-    "cool collected expression radiating charisma",
-    "excited bright-eyed look of amazement",
-    "peaceful content smile among legends"
+    "warm genuine smile showing natural joy",
+    "confident knowing smirk with relaxed eyes",
+    "candid mid-laugh moment full of life",
+    "cool collected gaze radiating charisma",
+    "excited bright expression of amazement"
   ];
   
+  // Random poses for variety  
   const poses = [
-    "standing center with confident presence",
-    "leaning in like sharing a secret with friends",
-    "arm casually around a celebrity's shoulder",
-    "seated in prime position among the icons",
-    "caught mid-gesture in animated conversation",
-    "positioned prominently as the guest of honor"
+    "standing front-center as the main subject",
+    "leaning in casually like sharing secrets with friends",
+    "arm around a legend's shoulder like old friends",
+    "seated prominently among the icons",
+    "caught in animated conversation with legends"
   ];
 
+  // Era-specific hairstyles (NO hats allowed)
   const eraHairstyles: Record<string, string[]> = {
-    '1950s': ['slicked-back pompadour', 'neat side-parted style', 'classic rockabilly quiff', 'vintage finger waves'],
-    '1960s': ['natural afro', 'mod bowl cut', 'bouffant style', 'sleek Jackie Kennedy-inspired'],
-    '1970s': ['feathered Farrah Fawcett style', 'full disco afro', 'shaggy layers', 'center-parted flowing'],
-    '1980s': ['big voluminous hair', 'crimped and teased style', 'mullet', 'asymmetric new wave cut'],
-    '1990s': ['fresh fade', 'Rachel haircut layers', 'box braids', 'curtain bangs'],
-    '2000s': ['sleek straightened', 'frosted tips', 'chunky highlights', 'emo side-swept fringe'],
-    '2010s': ['modern undercut', 'beachy waves', 'top knot', 'natural textured curls']
+    '1950s': ['slicked pompadour with shine', 'neat side-parted classic cut', 'vintage finger waves', 'rockabilly quiff with volume'],
+    '1960s': ['natural textured afro', 'mod bowl cut', 'bouffant volume style', 'sleek Jackie O-inspired'],
+    '1970s': ['feathered Farrah layers', 'full round disco afro', 'shaggy rock star layers', 'flowing center-parted mane'],
+    '1980s': ['big teased volume hair', 'crimped new wave style', 'power mullet', 'asymmetric punk cut'],
+    '1990s': ['fresh high-top fade', 'layered Rachel cut', 'sleek box braids', 'curtain bangs style'],
+    '2000s': ['sleek flat-ironed straight', 'frosted spiked tips', 'chunky highlighted layers', 'side-swept emo fringe'],
+    '2010s': ['modern textured undercut', 'beachy tousled waves', 'man bun top knot', 'natural coily curls']
+  };
+
+  // Era-specific jewelry
+  const eraJewelry: Record<string, string[]> = {
+    '1950s': ['classic watch', 'pearl earrings', 'simple gold chain'],
+    '1960s': ['peace medallion', 'beaded necklace', 'hoop earrings'],
+    '1970s': ['gold chains layered', 'big hoop earrings', 'turquoise jewelry'],
+    '1980s': ['chunky gold chains', 'statement earrings', 'multiple rings'],
+    '1990s': ['rope chains', 'nameplate necklace', 'bamboo earrings'],
+    '2000s': ['bling bling chains', 'diamond studs', 'oversized hoops'],
+    '2010s': ['minimal gold jewelry', 'layered delicate chains', 'designer watch']
   };
 
   const randomExpression = expressions[Math.floor(Math.random() * expressions.length)];
   const randomPose = poses[Math.floor(Math.random() * poses.length)];
-  const eraStyles = eraHairstyles[scenario.era] || eraHairstyles['1980s'];
+  const eraStyles = eraHairstyles[scenario.era] || eraHairstyles['1990s'];
   const randomHairstyle = eraStyles[Math.floor(Math.random() * eraStyles.length)];
+  const jewelry = eraJewelry[scenario.era] || eraJewelry['1990s'];
+  const randomJewelry = jewelry[Math.floor(Math.random() * jewelry.length)];
 
-  return `⚡ LEGENDARY TIME-TRAVEL TRANSFORMATION ⚡
+  return `🔒 ULTRA FACE-LOCK TRANSFORMATION PROTOCOL 🔒
 
-════════════════════════════════════════════════════════════════
-🔒 RULE #1: FACE-LOCK PROTOCOL (ABSOLUTELY NON-NEGOTIABLE)
-════════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════════
+⚡ ABSOLUTE RULE: THE FACE IS SACRED - ZERO MODIFICATIONS ⚡
+═══════════════════════════════════════════════════════════════════
 
-Analyze the uploaded photo. This person is YOUR SUBJECT - the time traveler.
+Look at the uploaded photo. This person is THE TIME TRAVELER.
 
-PRESERVE WITH 100% PIXEL-PERFECT ACCURACY:
-✓ Exact eye shape, color, spacing, lid structure
-✓ Precise nose - bridge, tip, nostrils, all proportions
-✓ Exact lip shape, thickness, natural color
-✓ Jawline, chin, cheekbones - every contour
-✓ Skin tone, texture, pores, any marks/moles/freckles
-✓ Facial hair if present - exact pattern and density
-✓ Ears, forehead shape, face proportions
+FACE FEATURES TO PRESERVE WITH 100% ACCURACY:
+• Eye shape, eye color, eye spacing, eyelid structure - EXACT
+• Nose shape, bridge, tip, nostrils - EXACT  
+• Lip shape, lip thickness, natural lip color - EXACT
+• Jawline contours, chin shape, cheekbones - EXACT
+• Skin tone, skin texture, any freckles/moles/marks - EXACT
+• Facial hair pattern and density (if present) - EXACT
+• Forehead shape, ear shape, face proportions - EXACT
 
-This face is SACRED. Do not modify ANY facial feature.
+THE FACE FROM THE PHOTO MUST BE 100% RECOGNIZABLE IN THE OUTPUT.
+Any change to facial features = FAILURE.
 
-════════════════════════════════════════════════════════════════
-🚫 RULE #2: MANDATORY REMOVAL (STRIP FROM ORIGINAL PHOTO)
-════════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════════
+🚫 MANDATORY REMOVAL - STRIP EVERYTHING EXCEPT FACE 🚫
+═══════════════════════════════════════════════════════════════════
 
-REMOVE AND REPLACE - DO NOT TRANSFER FROM ORIGINAL:
+FROM THE ORIGINAL PHOTO, REMOVE AND REPLACE:
 
-❌ HAT/CAP/HEADWEAR → REMOVE 100%. Show full head with new hair.
-❌ CURRENT HAIRSTYLE → REMOVE. Generate ${randomHairstyle} for ${scenario.era}
-❌ GLASSES/SUNGLASSES → REMOVE (unless vintage style fits scene)
-❌ ALL CLOTHING → REMOVE. Generate fresh ${scenario.era} fashion
-❌ BODY SHAPE → GENERATE new natural body for scene
-❌ ACCESSORIES → REMOVE. Generate era-appropriate items only
-❌ BACKGROUND → REMOVE. Use scene setting only
-❌ POSE/POSTURE → GENERATE fresh natural pose
+❌ ALL HATS/CAPS/HEADWEAR → Generate full visible head with new hair
+❌ CURRENT HAIRSTYLE → Replace with: ${randomHairstyle}
+❌ GLASSES/SUNGLASSES → Remove unless scene-appropriate vintage
+❌ ALL CURRENT CLOTHING → Generate fresh ${scenario.era} fashion
+❌ CURRENT BODY TYPE → Generate natural body fitting the scene
+❌ ALL ACCESSORIES → Generate: ${randomJewelry}
+❌ BACKGROUND → Use only the legendary scene setting
+❌ CURRENT POSE → Generate: ${randomPose}
 
-YOU KEEP ONLY THE FACE. Everything else is freshly generated for ${scenario.era}.
+KEEP ONLY: The exact face. Everything else = newly generated for ${scenario.era}.
 
-════════════════════════════════════════════════════════════════
-🌟 THE LEGENDARY MOMENT: ${scenario.title}
-🕐 ERA: ${scenario.era}
-════════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════════
+🌟 THE LEGENDARY SCENE: ${scenario.title}
+⏰ ERA: ${scenario.era}
+═══════════════════════════════════════════════════════════════════
 
 ${scenario.prompt_template}
 
-════════════════════════════════════════════════════════════════
-✨ YOUR SUBJECT IN THIS SCENE
-════════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════════
+👤 YOUR SUBJECT (THE TIME TRAVELER) IN THIS SCENE
+═══════════════════════════════════════════════════════════════════
 
-HAIRSTYLE: ${randomHairstyle} (authentic ${scenario.era} style)
-EXPRESSION: ${randomExpression}
-POSE: ${randomPose}
-OUTFIT: Authentic ${scenario.era} fashion fitting the scene perfectly
-POSITION: YOUR SUBJECT is the STAR - center of attention, main focus
+• HAIR: ${randomHairstyle} (fresh ${scenario.era} style, NO HATS)
+• EXPRESSION: ${randomExpression}
+• POSE: ${randomPose}
+• JEWELRY: ${randomJewelry}
+• OUTFIT: Authentic ${scenario.era} clothing matching the scene
+• POSITION: CENTER OF THE PHOTO - THE STAR, THE MAIN CHARACTER
 
-════════════════════════════════════════════════════════════════
-👥 CELEBRITY GROUP COMPOSITION RULES
-════════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════════
+👥 CELEBRITY COMPOSITION RULES - EACH LEGEND IS UNIQUE
+═══════════════════════════════════════════════════════════════════
 
-⚠️ EVERY celebrity is UNIQUE - NO DUPLICATES EVER
-⚠️ Each celebrity has DISTINCT pose, action, expression
-⚠️ YOUR SUBJECT is THE MAIN CHARACTER - celebrities surround them
-⚠️ All figures share IDENTICAL lighting, film grain, atmosphere
-⚠️ Natural group dynamics - like real friends, not staged
-⚠️ Each person clearly distinguishable as individual
+CRITICAL RULES FOR CELEBRITIES IN THE SCENE:
 
-════════════════════════════════════════════════════════════════
-📸 FINAL OUTPUT: ULTRA-REALISTIC VINTAGE PHOTOGRAPH
-════════════════════════════════════════════════════════════════
+✓ Each celebrity has their OWN DISTINCT recognizable likeness
+✓ Each celebrity has a DIFFERENT pose and action
+✓ Each celebrity is clearly distinguishable from others
+✓ NO TWO PEOPLE should look similar or like clones
+✓ Celebrities SURROUND the time traveler naturally
+✓ All figures share IDENTICAL lighting and film grain
+✓ Natural group dynamics - like real friends hanging out
 
-• Shot on authentic ${scenario.era} film camera
-• Period-correct color grading and lighting
-• Natural film grain and texture
-• Photorealistic - should look like REAL archival photo
-• YOUR SUBJECT's face is 100% recognizable from input
-• Composition: YOUR SUBJECT prominently featured as the time traveler among legends
+THE TIME TRAVELER (from photo) = ONLY PERSON with face-lock
+CELEBRITIES = Generate their famous likenesses naturally
 
-CREATE THIS LEGENDARY MOMENT. Face is LOCKED. Hair, clothes, body = FRESH for ${scenario.era}.`;
+═══════════════════════════════════════════════════════════════════
+📸 FINAL OUTPUT: AUTHENTIC ${scenario.era} PHOTOGRAPH
+═══════════════════════════════════════════════════════════════════
+
+• Shot on authentic ${scenario.era} era camera
+• Period-correct color grading and tones
+• Natural film grain and texture appropriate to era
+• Photorealistic - indistinguishable from real archival photo
+• Candid feel - not overly posed or stiff
+• Time traveler's face 100% recognizable from input photo
+• Hair, clothes, jewelry = ALL FRESH for ${scenario.era}
+
+CREATE THIS LEGENDARY MOMENT NOW.`;
 }
