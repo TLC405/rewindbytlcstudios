@@ -47,6 +47,30 @@ export type Database = {
         }
         Relationships: []
       }
+      ip_usage: {
+        Row: {
+          first_used_at: string
+          id: string
+          ip_address: string
+          last_used_at: string
+          transformation_count: number
+        }
+        Insert: {
+          first_used_at?: string
+          id?: string
+          ip_address: string
+          last_used_at?: string
+          transformation_count?: number
+        }
+        Update: {
+          first_used_at?: string
+          id?: string
+          ip_address?: string
+          last_used_at?: string
+          transformation_count?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -127,7 +151,7 @@ export type Database = {
           status: string
           transformed_image_url: string | null
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -139,7 +163,7 @@ export type Database = {
           status?: string
           transformed_image_url?: string | null
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -151,7 +175,7 @@ export type Database = {
           status?: string
           transformed_image_url?: string | null
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {

@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AtomicAuthModal } from "@/components/AtomicAuthModal";
-import { AtomicStudio } from "@/components/AtomicStudio";
-import { TimelineHome } from "@/components/TimelineHome";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { User, LogOut, Coins } from "lucide-react";
+import { LandingHero } from "@/components/LandingHero";
+import { HommiesAuthModal } from "@/components/HommiesAuthModal";
+import { HommiesNavBar } from "@/components/HommiesNavBar";
+import { PreviewStudio } from "@/components/PreviewStudio";
+import { AtomicStudio } from "@/components/AtomicStudio";
+import { TimelineHome } from "@/components/TimelineHome";
+import { usePreviewMode } from "@/hooks/usePreviewMode";
 
 interface Scene {
   id: string;
@@ -18,11 +21,15 @@ interface Scene {
 const Index = () => {
   const [user, setUser] = useState<any>(null);
   const [credits, setCredits] = useState(0);
+  const [displayName, setDisplayName] = useState<string>("");
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
   const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userTransformations, setUserTransformations] = useState<any[]>([]);
+  const [showTimeline, setShowTimeline] = useState(false);
+
+  const { hasUsedFreeTransform, recordTransformation, isLoading: previewLoading } = usePreviewMode();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -39,6 +46,7 @@ const Index = () => {
         fetchUserData(session.user.id);
       } else {
         setCredits(0);
+        setDisplayName("");
         setUserTransformations([]);
       }
     });
@@ -49,12 +57,13 @@ const Index = () => {
   const fetchUserData = async (userId: string) => {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('credits')
+      .select('credits, display_name')
       .eq('user_id', userId)
       .single();
     
     if (profile) {
       setCredits(profile.credits);
+      setDisplayName(profile.display_name || "");
     }
 
     const { data: transformations } = await supabase
@@ -70,11 +79,6 @@ const Index = () => {
   };
 
   const handleSceneSelect = (scene: Scene, photo: string) => {
-    if (!user) {
-      setShowAuthModal(true);
-      toast.info('Sign in to travel back in time!');
-      return;
-    }
     setUploadedPhoto(photo);
     setSelectedScene({
       ...scene,
@@ -83,18 +87,21 @@ const Index = () => {
     } as any);
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    toast.success('Signed out');
-  };
-
   const handleBack = () => {
     setSelectedScene(null);
     setUploadedPhoto(null);
     if (user) fetchUserData(user.id);
   };
 
-  if (loading) {
+  const handlePreviewClick = () => {
+    setShowTimeline(true);
+  };
+
+  const handlePreviewTransformComplete = () => {
+    recordTransformation();
+  };
+
+  if (loading || previewLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <motion.div
@@ -105,10 +112,10 @@ const Index = () => {
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-12 h-12 rounded-full border-2 border-muted border-t-primary mx-auto mb-6"
+            className="w-16 h-16 rounded-full border-2 border-muted border-t-primary mx-auto mb-6"
           />
-          <h1 className="font-display text-3xl font-bold text-foreground">
-            Rewind
+          <h1 className="font-display text-4xl font-bold gradient-text-gold tracking-wider">
+            REWIND
           </h1>
         </motion.div>
       </div>
@@ -122,79 +129,73 @@ const Index = () => {
       
       <AnimatePresence mode="wait">
         {selectedScene ? (
-          <AtomicStudio
-            key="studio"
-            scenario={selectedScene as any}
-            onBack={handleBack}
-            userId={user?.id}
-            preUploadedPhoto={uploadedPhoto}
-          />
-        ) : (
+          // Studio Mode (Preview or Full)
+          user ? (
+            <AtomicStudio
+              key="studio"
+              scenario={selectedScene as any}
+              onBack={handleBack}
+              userId={user.id}
+              preUploadedPhoto={uploadedPhoto}
+            />
+          ) : (
+            <PreviewStudio
+              key="preview-studio"
+              scenario={selectedScene as any}
+              onBack={handleBack}
+              preUploadedPhoto={uploadedPhoto}
+              onTransformComplete={handlePreviewTransformComplete}
+              hasUsedFreeTransform={hasUsedFreeTransform}
+              onShowLogin={() => setShowAuthModal(true)}
+            />
+          )
+        ) : showTimeline || user ? (
+          // Timeline (Logged in or Preview mode active)
           <motion.div
-            key="home"
+            key="timeline"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="relative"
           >
-            {/* Minimal Top Bar */}
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
-              <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-                <div className="flex flex-col">
-                  <span className="font-display text-xl font-bold text-foreground">
-                    Rewind
-                  </span>
-                  <span className="text-[10px] text-muted-foreground -mt-1 hidden md:block">
-                    Putting TLC's hommies back in time
-                  </span>
-                </div>
+            <HommiesNavBar 
+              user={user}
+              credits={credits}
+              displayName={displayName}
+              onAuthClick={() => setShowAuthModal(true)}
+            />
 
-                <div className="flex items-center gap-3">
-                  {user ? (
-                    <>
-                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted">
-                        <Coins className="w-4 h-4 text-muted-foreground" />
-                        <span className="font-mono text-sm text-foreground">{credits}</span>
-                      </div>
-                      <button
-                        onClick={handleSignOut}
-                        className="p-2 rounded-full hover:bg-muted transition-colors"
-                      >
-                        <LogOut className="w-4 h-4 text-muted-foreground" />
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => setShowAuthModal(true)}
-                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted hover:bg-muted/80 transition-colors"
-                    >
-                      <User className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-foreground">Sign In</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            </nav>
-
-            {/* Timeline Content */}
-            <div className="pt-16">
+            <div className="pt-20">
               <TimelineHome
                 onSelectScene={handleSceneSelect}
                 userTransformations={userTransformations}
               />
             </div>
 
-            {/* Simple Footer */}
             <footer className="py-8 text-center border-t border-border/30">
               <p className="text-xs text-muted-foreground">
                 © 2024 Rewind · Powered by Truth, Love & Connection
               </p>
             </footer>
           </motion.div>
+        ) : (
+          // Landing Page (Not logged in, hasn't started preview)
+          <motion.div
+            key="landing"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <LandingHero
+              onPreviewClick={handlePreviewClick}
+              onLoginClick={() => setShowAuthModal(true)}
+              hasUsedFreeTransform={hasUsedFreeTransform}
+            />
+          </motion.div>
         )}
       </AnimatePresence>
 
-      <AtomicAuthModal
+      <HommiesAuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={() => {
