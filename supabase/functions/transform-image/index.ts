@@ -193,6 +193,7 @@ function buildUltraFaceLockPrompt(scenario: { title: string; era: string; prompt
 
   // Era-specific hairstyles (NO hats allowed)
   const eraHairstyles: Record<string, string[]> = {
+    '1940s': ['victory rolls waves', 'sleek wartime pomade style', 'finger wave elegance', 'neat military-inspired cut'],
     '1950s': ['slicked pompadour with shine', 'neat side-parted classic cut', 'vintage finger waves', 'rockabilly quiff with volume'],
     '1960s': ['natural textured afro', 'mod bowl cut', 'bouffant volume style', 'sleek Jackie O-inspired'],
     '1970s': ['feathered Farrah layers', 'full round disco afro', 'shaggy rock star layers', 'flowing center-parted mane'],
@@ -204,6 +205,7 @@ function buildUltraFaceLockPrompt(scenario: { title: string; era: string; prompt
 
   // Era-specific jewelry
   const eraJewelry: Record<string, string[]> = {
+    '1940s': ['simple pin brooch', 'modest pearl strand', 'military watch'],
     '1950s': ['classic watch', 'pearl earrings', 'simple gold chain'],
     '1960s': ['peace medallion', 'beaded necklace', 'hoop earrings'],
     '1970s': ['gold chains layered', 'big hoop earrings', 'turquoise jewelry'],
@@ -276,21 +278,38 @@ ${scenario.prompt_template}
 • POSITION: CENTER OF THE PHOTO - THE STAR, THE MAIN CHARACTER
 
 ═══════════════════════════════════════════════════════════════════
-👥 CELEBRITY COMPOSITION RULES - EACH LEGEND IS UNIQUE
+🛡️ ANTI-CLONE PROTOCOL - UNIQUE CELEBRITY LIKENESSES 🛡️
 ═══════════════════════════════════════════════════════════════════
 
-CRITICAL RULES FOR CELEBRITIES IN THE SCENE:
+CRITICAL: EACH FAMOUS PERSON MUST BE DISTINCTLY UNIQUE
 
-✓ Each celebrity has their OWN DISTINCT recognizable likeness
-✓ Each celebrity has a DIFFERENT pose and action
-✓ Each celebrity is clearly distinguishable from others
-✓ NO TWO PEOPLE should look similar or like clones
+✓ EVERY celebrity referenced in scene has their OWN DISTINCT face
+✓ NO TWO FACES should share similar features or look like clones
+✓ Each celebrity has their HISTORICALLY ACCURATE famous likeness
+✓ Each celebrity has a UNIQUE dynamic pose/action as described
 ✓ Celebrities SURROUND the time traveler naturally
-✓ All figures share IDENTICAL lighting and film grain
-✓ Natural group dynamics - like real friends hanging out
+✓ All figures share IDENTICAL lighting, film grain, color grade
 
-THE TIME TRAVELER (from photo) = ONLY PERSON with face-lock
-CELEBRITIES = Generate their famous likenesses naturally
+═══════════════════════════════════════════════════════════════════
+🎯 DYNAMIC ACTION LOCK - NO STATIC POSES 🎯
+═══════════════════════════════════════════════════════════════════
+
+✓ Every person must be CAUGHT IN ACTION, not standing still
+✓ Use motion blur where appropriate for action shots
+✓ Capture the PEAK MOMENT of each celebrity's action
+✓ Energy and movement should feel ALIVE and CANDID
+✓ The scene should feel like a SNAPSHOT of a real moment
+
+═══════════════════════════════════════════════════════════════════
+🔍 UNIQUE LIKENESS VERIFICATION 🔍
+═══════════════════════════════════════════════════════════════════
+
+BEFORE FINAL OUTPUT, VERIFY:
+□ The time traveler's face matches the input photo EXACTLY
+□ Each celebrity is RECOGNIZABLE as their famous self
+□ NO TWO PEOPLE in the image look similar or cloned
+□ Every person has distinct facial features, body type, pose
+□ The scene feels NATURAL, like friends captured in a moment
 
 ═══════════════════════════════════════════════════════════════════
 📸 FINAL OUTPUT: AUTHENTIC ${scenario.era} PHOTOGRAPH
@@ -303,6 +322,7 @@ CELEBRITIES = Generate their famous likenesses naturally
 • Candid feel - not overly posed or stiff
 • Time traveler's face 100% recognizable from input photo
 • Hair, clothes, jewelry = ALL FRESH for ${scenario.era}
+• Every celebrity UNIQUE and RECOGNIZABLE
 
 CREATE THIS LEGENDARY MOMENT NOW.`;
 }
