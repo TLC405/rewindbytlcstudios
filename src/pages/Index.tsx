@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { LandingHero } from "@/components/LandingHero";
+import { HeroCinematic } from "@/components/HeroCinematic";
 import { HommiesAuthModal } from "@/components/HommiesAuthModal";
-import { HommiesNavBar } from "@/components/HommiesNavBar";
+import { GlassNav } from "@/components/GlassNav";
 import { PreviewStudio } from "@/components/PreviewStudio";
 import { AtomicStudio } from "@/components/AtomicStudio";
 import { TimelineHome } from "@/components/TimelineHome";
-import { usePreviewMode } from "@/hooks/usePreviewMode";
+import { useAdvancedFingerprint } from "@/hooks/useAdvancedFingerprint";
 
 interface Scene {
   id: string;
@@ -29,7 +29,7 @@ const Index = () => {
   const [userTransformations, setUserTransformations] = useState<any[]>([]);
   const [showTimeline, setShowTimeline] = useState(false);
 
-  const { hasUsedFreeTransform, recordTransformation, isLoading: previewLoading } = usePreviewMode();
+  const { hasUsedFreeTransform, recordTransformation, isLoading: previewLoading, isBlocked } = useAdvancedFingerprint();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -158,7 +158,7 @@ const Index = () => {
             exit={{ opacity: 0 }}
             className="relative"
           >
-            <HommiesNavBar 
+            <GlassNav 
               user={user}
               credits={credits}
               displayName={displayName}
@@ -186,10 +186,10 @@ const Index = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <LandingHero
+            <HeroCinematic
               onPreviewClick={handlePreviewClick}
               onLoginClick={() => setShowAuthModal(true)}
-              hasUsedFreeTransform={hasUsedFreeTransform}
+              hasUsedFreeTransform={hasUsedFreeTransform || isBlocked}
             />
           </motion.div>
         )}

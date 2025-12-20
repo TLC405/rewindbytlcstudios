@@ -47,6 +47,63 @@ export type Database = {
         }
         Relationships: []
       }
+      device_fingerprints: {
+        Row: {
+          audio_hash: string | null
+          block_reason: string | null
+          canvas_hash: string | null
+          cpu_cores: number | null
+          device_memory: number | null
+          fingerprint_hash: string
+          first_seen_at: string
+          id: string
+          is_blocked: boolean
+          language: string | null
+          last_seen_at: string
+          platform: string | null
+          screen_hash: string | null
+          timezone: string | null
+          transformation_count: number
+          webgl_hash: string | null
+        }
+        Insert: {
+          audio_hash?: string | null
+          block_reason?: string | null
+          canvas_hash?: string | null
+          cpu_cores?: number | null
+          device_memory?: number | null
+          fingerprint_hash: string
+          first_seen_at?: string
+          id?: string
+          is_blocked?: boolean
+          language?: string | null
+          last_seen_at?: string
+          platform?: string | null
+          screen_hash?: string | null
+          timezone?: string | null
+          transformation_count?: number
+          webgl_hash?: string | null
+        }
+        Update: {
+          audio_hash?: string | null
+          block_reason?: string | null
+          canvas_hash?: string | null
+          cpu_cores?: number | null
+          device_memory?: number | null
+          fingerprint_hash?: string
+          first_seen_at?: string
+          id?: string
+          is_blocked?: boolean
+          language?: string | null
+          last_seen_at?: string
+          platform?: string | null
+          screen_hash?: string | null
+          timezone?: string | null
+          transformation_count?: number
+          webgl_hash?: string | null
+        }
+        Relationships: []
+      }
       ip_usage: {
         Row: {
           first_used_at: string

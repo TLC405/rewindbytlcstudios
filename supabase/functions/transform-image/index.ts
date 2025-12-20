@@ -21,13 +21,15 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { imageBase64, scenarioId, userId, transformationId } = await req.json();
+    const { imageBase64, scenarioId, userId, transformationId, isPreview } = await req.json();
 
-    if (!imageBase64 || !scenarioId || !userId) {
-      throw new Error('Missing required fields: imageBase64, scenarioId, userId');
+    // userId is optional for preview/anonymous mode
+    if (!imageBase64 || !scenarioId) {
+      throw new Error('Missing required fields: imageBase64, scenarioId');
     }
 
-    console.log(`Starting transformation for user ${userId}, scenario ${scenarioId}`);
+    const isAnonymous = !userId;
+    console.log(`Starting transformation for ${isAnonymous ? 'anonymous user' : `user ${userId}`}, scenario ${scenarioId}`);
 
     // Get the scenario details
     const { data: scenario, error: scenarioError } = await supabase
@@ -104,7 +106,9 @@ serve(async (req) => {
     // Upload the generated image to storage
     const imageData = generatedImageUrl.split(',')[1];
     const imageBuffer = Uint8Array.from(atob(imageData), c => c.charCodeAt(0));
-    const fileName = `${userId}/${transformationId || Date.now()}_transformed.png`;
+    // Use anonymous folder for preview mode
+    const storagePath = isAnonymous ? 'anonymous' : userId;
+    const fileName = `${storagePath}/${transformationId || Date.now()}_transformed.png`;
 
     const { error: uploadError } = await supabase.storage
       .from('transformations')
@@ -137,18 +141,20 @@ serve(async (req) => {
         .eq('id', transformationId);
     }
 
-    // Deduct credit from user
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('credits')
-      .eq('user_id', userId)
-      .single();
-    
-    if (profile && profile.credits > 0) {
-      await supabase
+    // Deduct credit from user (skip for anonymous/preview mode)
+    if (!isAnonymous && userId) {
+      const { data: profile } = await supabase
         .from('profiles')
-        .update({ credits: profile.credits - 1 })
-        .eq('user_id', userId);
+        .select('credits')
+        .eq('user_id', userId)
+        .single();
+      
+      if (profile && profile.credits > 0) {
+        await supabase
+          .from('profiles')
+          .update({ credits: profile.credits - 1 })
+          .eq('user_id', userId);
+      }
     }
 
     console.log('ULTRA transformation completed successfully');
