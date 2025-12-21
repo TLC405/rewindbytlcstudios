@@ -21,31 +21,42 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { imageBase64, scenarioId, userId, transformationId, isPreview } = await req.json();
+    const { imageBase64, scenarioId, userId, transformationId, isPreview, isFreeShowcase } = await req.json();
 
     // userId is optional for preview/anonymous mode
-    if (!imageBase64 || !scenarioId) {
-      throw new Error('Missing required fields: imageBase64, scenarioId');
+    if (!imageBase64) {
+      throw new Error('Missing required field: imageBase64');
     }
 
     const isAnonymous = !userId;
-    console.log(`Starting transformation for ${isAnonymous ? 'anonymous user' : `user ${userId}`}, scenario ${scenarioId}`);
+    console.log(`Starting transformation for ${isAnonymous ? 'anonymous user' : `user ${userId}`}, isPreview: ${isPreview}, isFreeShowcase: ${isFreeShowcase}`);
 
-    // Get the scenario details
-    const { data: scenario, error: scenarioError } = await supabase
-      .from('scenarios')
-      .select('*')
-      .eq('id', scenarioId)
-      .single();
+    let ultraPrompt: string;
 
-    if (scenarioError || !scenario) {
-      throw new Error('Scenario not found');
+    // For free showcase, use the special creative prompt
+    if (isFreeShowcase || isPreview) {
+      console.log('Using FREE SHOWCASE creative prompt - legends from all decades');
+      ultraPrompt = buildFreeShowcasePrompt();
+    } else {
+      // Regular scenario-based transformation
+      if (!scenarioId) {
+        throw new Error('Missing required field: scenarioId');
+      }
+
+      // Get the scenario details
+      const { data: scenario, error: scenarioError } = await supabase
+        .from('scenarios')
+        .select('*')
+        .eq('id', scenarioId)
+        .single();
+
+      if (scenarioError || !scenario) {
+        throw new Error('Scenario not found');
+      }
+
+      console.log(`Using scenario: ${scenario.title}`);
+      ultraPrompt = buildAtomicFaceLockPrompt(scenario);
     }
-
-    console.log(`Using scenario: ${scenario.title}`);
-
-    // Build the ULTRA face-lock prompt with HAIR/FACIAL HAIR CREATION
-    const ultraPrompt = buildAtomicFaceLockPrompt(scenario);
 
     console.log('Calling Lovable AI for ATOMIC transformation...');
     console.log('Prompt preview:', ultraPrompt.substring(0, 800));
@@ -374,6 +385,129 @@ Before generating, verify ALL of these:
 
 ═══════════════════════════════════════════════════════════════════════════════
 GENERATE THIS LEGENDARY MUSEUM-QUALITY MOMENT NOW.
+═══════════════════════════════════════════════════════════════════════════════
+`;
+}
+
+function buildFreeShowcasePrompt(): string {
+  // Random legendary scene combining icons from multiple decades
+  const showcaseScenes = [
+    {
+      title: "The Ultimate Legends Gathering",
+      era: "Multi-Era Time Collision",
+      description: "A miraculous moment where legends from every decade gather in one extraordinary photograph"
+    }
+  ];
+
+  const scene = showcaseScenes[0];
+
+  return `
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║  ⚡ ULTIMATE FREE SHOWCASE - LEGENDS ACROSS ALL DECADES ⚡                    ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  SECTION A: FACE-ONLY LOCK FROM INPUT PHOTO                                   ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+LOCK THESE EXACTLY FROM INPUT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ GENDER: Detect male/female → OUTPUT MUST MATCH 100%
+✓ EYE SHAPE: Exact shape, spacing, color
+✓ EYEBROWS: Exact arch, thickness, color
+✓ NOSE: Exact bridge, tip, nostril shape
+✓ LIPS: Exact thickness, cupid's bow, color
+✓ JAW: Exact jawline, chin shape
+✓ CHEEKBONES: Exact height and prominence
+✓ SKIN: Exact tone, every freckle, mole, birthmark
+✓ BODY TYPE: Approximate build from input
+✓ AGE: Approximate age range from input
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  SECTION B: CREATE NEW - DO NOT USE INPUT HAIR/CLOTHES                        ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+🎨 HAIR - REMOVE ANY HAT, CREATE NEW VINTAGE STYLE:
+• REMOVE any hat, cap, beanie, hood from input
+• IF MALE: Generate classic 1970s feathered layers or slicked executive style
+• IF FEMALE: Generate glamorous 1970s Farrah Fawcett waves or elegant curls
+
+🧔 FACIAL HAIR - CREATE ERA STYLE:
+• IF MALE: Light stylish mustache or clean-shaven
+• IF FEMALE: None
+
+👔 WARDROBE - CREATE SPECTACULAR VINTAGE:
+• IF MALE: Sharp 1970s suit, open collar, gold chain, platform shoes
+• IF FEMALE: Glamorous 1970s halter dress, elegant jewelry
+
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║  🎬 THE ULTIMATE LEGENDS GATHERING                                            ║
+║  ⏰ ERA: 1970s DISCO ERA - STUDIO 54 VIBES                                    ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+THE SCENE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+The most exclusive party in history. Inside the legendary Studio 54 nightclub, 
+1977. The disco ball spins above, casting diamond reflections across the room.
+
+THE TIME TRAVELER (input person with LOCKED face) stands CENTER, 
+surrounded by the greatest icons of the 1970s:
+
+LEFT SIDE:
+• MUHAMMAD ALI - The Greatest, in sharp suit, playful boxing stance
+• DIANA ROSS - Glamorous in sequined gown, magnificent afro
+• ANDY WARHOL - Silver wig, black turtleneck, observing with camera
+
+RIGHT SIDE:  
+• DONNA SUMMER - Disco queen in flowing dress, mid-laugh
+• STEVIE WONDER - Behind piano keys, joyful smile, signature braids
+• GRACE JONES - Striking androgynous style, geometric haircut
+
+BACKGROUND ATMOSPHERE:
+• Mirrored walls, neon purple and pink lighting
+• Disco ball fragments of light everywhere
+• VIP velvet ropes, champagne bottles
+• Dance floor visible with silhouetted dancers
+• Authentic 1970s Studio 54 decadent energy
+
+THE MOMENT:
+Everyone gravitating toward THE TIME TRAVELER as if they're the guest of honor.
+Natural, candid energy - caught mid-celebration, genuine laughter and connection.
+
+PHOTOGRAPHY STYLE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• 1970s nightclub photography aesthetic
+• Warm tungsten tones with disco lighting accents
+• Film grain authentic to era
+• Matte, organic - NO modern digital look
+• Rich shadows, atmospheric depth
+• Ultra high resolution, museum-quality detail
+
+CRITICAL CELEBRITY REQUIREMENTS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• Each celebrity MUST have their EXACT famous face
+• Muhammad Ali: Powerful jaw, confident eyes, boxing champion physique
+• Diana Ross: Stunning features, magnificent presence, signature smile
+• Donna Summer: Beautiful disco queen features, joyful expression
+• Stevie Wonder: Signature smile, sunglasses, musical genius aura
+• Andy Warhol: Pale skin, silver wig, artistic observer demeanor
+• Grace Jones: Striking angular features, bold androgynous style
+• NO cloning - every person distinctly unique
+
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║  🔍 FINAL VERIFICATION                                                        ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+□ TIME TRAVELER GENDER matches input EXACTLY
+□ TIME TRAVELER FACE is 100% recognizable as input person
+□ TIME TRAVELER has NEW vintage hair (no hat from input)
+□ TIME TRAVELER has NEW vintage wardrobe
+□ All 6 CELEBRITIES are UNIQUE and RECOGNIZABLE
+□ Studio 54 atmosphere is authentic 1970s
+□ Matte, filmic, organic - NO neon oversaturation
+
+═══════════════════════════════════════════════════════════════════════════════
+GENERATE THIS SPECTACULAR SHOWCASE MOMENT NOW.
 ═══════════════════════════════════════════════════════════════════════════════
 `;
 }

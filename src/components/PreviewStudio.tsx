@@ -98,7 +98,8 @@ export function PreviewStudio({
           scenarioId: scenario.id,
           userId: null,
           transformationId: transformation.id,
-          isPreview: true
+          isPreview: true,
+          isFreeShowcase: true
         }
       });
 
