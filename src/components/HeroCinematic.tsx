@@ -106,12 +106,12 @@ export function HeroCinematic({
                 whileTap={{ scale: 0.98 }}
               >
                 <Play className="w-5 h-5" />
-                <span>Try Free ({remainingTransforms} left)</span>
+                <span>Try Free Preview</span>
               </motion.button>
             ) : (
               <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-muted/50 text-muted-foreground text-sm mx-auto lg:mx-0">
                 <Sparkles className="w-4 h-4" />
-                <span>Free previews used</span>
+                <span>Free preview used</span>
               </div>
             )}
 
@@ -128,7 +128,7 @@ export function HeroCinematic({
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Enter Access Code"
+                    placeholder="Enter TLC's Hommies Code"
                     value={accessCode}
                     onChange={(e) => {
                       setAccessCode(e.target.value);

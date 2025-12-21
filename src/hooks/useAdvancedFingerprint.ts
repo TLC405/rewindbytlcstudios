@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-const MAX_FREE_TRANSFORMS = 5;
+const MAX_FREE_TRANSFORMS = 1;
 
 interface FingerprintData {
   fingerprint_hash: string;
