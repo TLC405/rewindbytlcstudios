@@ -44,11 +44,11 @@ serve(async (req) => {
 
     console.log(`Using scenario: ${scenario.title}`);
 
-    // Build the ULTRA face-lock prompt
-    const ultraPrompt = buildUltraFaceLockPrompt(scenario);
+    // Build the ULTRA face-lock prompt with HAIR/FACIAL HAIR CREATION
+    const ultraPrompt = buildAtomicFaceLockPrompt(scenario);
 
-    console.log('Calling Lovable AI for ULTRA transformation...');
-    console.log('Prompt preview:', ultraPrompt.substring(0, 500));
+    console.log('Calling Lovable AI for ATOMIC transformation...');
+    console.log('Prompt preview:', ultraPrompt.substring(0, 800));
 
     // Call Lovable AI with image editing capability
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -157,7 +157,7 @@ serve(async (req) => {
       }
     }
 
-    console.log('ULTRA transformation completed successfully');
+    console.log('ATOMIC transformation completed successfully');
 
     return new Response(JSON.stringify({ 
       success: true,
@@ -178,93 +178,202 @@ serve(async (req) => {
   }
 });
 
-function buildUltraFaceLockPrompt(scenario: { title: string; era: string; prompt_template: string }): string {
+function buildAtomicFaceLockPrompt(scenario: { title: string; era: string; prompt_template: string }): string {
+  // Extract the decade from era for hair/facial hair generation
+  const era = scenario.era.toLowerCase();
+  
+  // Determine era-specific hair and facial hair styles
+  const getEraHairStyles = () => {
+    if (era.includes('1950') || era.includes('50s')) {
+      return {
+        maleHair: "1950s men's pompadour with slicked-back sides, Brylcreem shine, clean tapered nape, or classic short back and sides with side part",
+        femaleHair: "1950s women's victory rolls, pin curls, short elegant waves, or Grace Kelly sophisticated updo with soft curls",
+        maleFacialHair: "CLEAN-SHAVEN - smooth face, no beard, no stubble, no mustache (1950s clean-cut standard)",
+        maleWardrobe: "1950s tailored suit with narrow lapels, skinny tie, white dress shirt, leather oxford shoes",
+        femaleWardrobe: "1950s full-skirted dress with petticoat, pearls, kitten heels, or elegant pencil skirt with fitted blouse"
+      };
+    }
+    if (era.includes('1960') || era.includes('60s')) {
+      return {
+        maleHair: "1960s men's mop-top Beatles-style fringe, or clean mod cut with forward-swept bangs, or slicked back executive style",
+        femaleHair: "1960s women's bouffant with volume at crown, beehive updo, or sleek straight hair with flip ends à la Jackie Kennedy",
+        maleFacialHair: "CLEAN-SHAVEN or light sideburns only - no full beard, smooth chin, perhaps thin mustache for late 60s",
+        maleWardrobe: "1960s slim-cut collarless suit, skinny tie, Chelsea boots, or turtleneck with sport coat",
+        femaleWardrobe: "1960s A-line shift dress, go-go boots, pillbox hat optional, or elegant Chanel-style suit"
+      };
+    }
+    if (era.includes('1970') || era.includes('70s')) {
+      return {
+        maleHair: "1970s men's shaggy feathered layers, afro, long sideburns, or disco-era blow-dried volume with center part",
+        femaleHair: "1970s women's Farrah Fawcett feathered wings, long straight center-part, afro, or bohemian waves",
+        maleFacialHair: "1970s THICK MUSTACHE common, or full beard acceptable, mutton chops, or clean with big sideburns",
+        maleWardrobe: "1970s wide-collar shirt with chest exposed, bell-bottom trousers, platform shoes, leather jacket",
+        femaleWardrobe: "1970s maxi dress, bell-bottoms with crop top, platform shoes, bohemian layers and fringe"
+      };
+    }
+    if (era.includes('1980') || era.includes('80s')) {
+      return {
+        maleHair: "1980s men's jheri curl, mullet (business front party back), spiky gelled hair, or power-executive side part",
+        femaleHair: "1980s women's big permed hair with volume, crimped layers, side ponytail, or teased bangs with hairspray",
+        maleFacialHair: "1980s LIGHT STUBBLE acceptable (Miami Vice), clean-shaven common, thin mustache, or soul patch",
+        maleWardrobe: "1980s power suit with padded shoulders, skinny tie, Members Only jacket, or athletic wear with high-tops",
+        femaleWardrobe: "1980s power suit with shoulder pads, neon colors, leg warmers, or glamorous sequined dress"
+      };
+    }
+    if (era.includes('1990') || era.includes('90s')) {
+      return {
+        maleHair: "1990s men's curtains parted in middle, fresh fade with flat top, caesar cut, or bleached spiky tips",
+        femaleHair: "1990s women's Rachel cut with layers, straight and sleek, crimped sections, or messy updo with face-framing pieces",
+        maleFacialHair: "1990s GOATEE popular, soul patch, thin line beard, or clean-shaven with sharp lines",
+        maleWardrobe: "1990s baggy jeans, oversized flannel shirt, Timberland boots, or fresh athletic gear with chains",
+        femaleWardrobe: "1990s slip dress, choker necklace, platform sneakers, or high-waisted jeans with crop top"
+      };
+    }
+    // Default/generic vintage
+    return {
+      maleHair: "era-appropriate men's hairstyle matching the scene's time period",
+      femaleHair: "era-appropriate women's hairstyle matching the scene's time period",
+      maleFacialHair: "era-appropriate facial hair or clean-shaven based on the time period",
+      maleWardrobe: "era-appropriate men's clothing matching the scene's time period",
+      femaleWardrobe: "era-appropriate women's clothing matching the scene's time period"
+    };
+  };
+
+  const eraStyles = getEraHairStyles();
+
   return `
-═══════════════════════════════════════════════════════════════════════════════
-⚡ ATOMIC IDENTITY LOCK PROTOCOL - ABSOLUTE NON-NEGOTIABLE RULES ⚡
-═══════════════════════════════════════════════════════════════════════════════
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║  ⚡ ATOMIC FACE-ONLY LOCK PROTOCOL - WITH HAIR & STYLE CREATION ⚡            ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
 
-RULE 0: GENDER IS SACRED - ABSOLUTE LOCK
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-• Detect the EXACT gender/sex from the input photo FIRST
-• Male in photo → Male in output (100% identical)
-• Female in photo → Female in output (100% identical)
-• NEVER EVER change, swap, or alter gender under ANY circumstance
-• This rule OVERRIDES all scene descriptions and prompts
-• If scene mentions opposite gender → IGNORE and use input gender
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  SECTION A: WHAT TO LOCK FROM INPUT PHOTO (FACE GEOMETRY ONLY)               ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-RULE 1: FACE IS SACRED - PIXEL-LEVEL LOCK
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-• The face from input = the ONLY face for the time traveler subject
-• Copy EVERY feature: exact eye shape, exact eye color, exact eye spacing
-• Copy EXACTLY: nose bridge, nose tip, nostril shape, nose width
-• Copy EXACTLY: lip shape, lip thickness, lip color, mouth width
-• Copy EXACTLY: jawline angle, chin shape, cheekbone height
-• Copy EXACTLY: skin tone, skin texture, every freckle/mole/mark
-• Copy EXACTLY: forehead shape, hairline pattern, ear shape
-• If beard/stubble in input → beard/stubble in output
-• If clean-shaven in input → clean-shaven in output
-• The output person MUST be immediately recognizable as input person
+LOCK THESE EXACTLY - COPY PIXEL-BY-PIXEL FROM INPUT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ GENDER: Detect male/female from input → OUTPUT MUST MATCH 100%
+✓ EYE SHAPE: Exact almond/round/hooded shape, exact spacing, exact color
+✓ EYEBROWS: Exact arch, thickness, color, spacing from input
+✓ NOSE: Exact bridge height, tip shape, nostril width, nose length
+✓ LIPS: Exact lip thickness, cupid's bow, lip color, mouth width
+✓ JAW: Exact jawline angle, chin shape, chin cleft if present
+✓ CHEEKBONES: Exact height and prominence from input
+✓ SKIN: Exact skin tone, texture, every freckle, mole, birthmark, scar
+✓ EARS: Exact ear shape if visible
+✓ FOREHEAD: Exact shape and proportions
+✓ BODY TYPE: Approximate build (slim/athletic/heavy) from input
+✓ AGE: Approximate age range from input (unless scene specifies aging)
 
-RULE 2: BODY TYPE IS SACRED
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-• Preserve approximate body build from input photo
-• Do NOT make thinner, fatter, taller, or shorter
-• Age should match input unless scene explicitly requires aging
-• If input shows broad shoulders → output has broad shoulders
-• If input shows slim build → output has slim build
+THE OUTPUT FACE MUST BE IMMEDIATELY RECOGNIZABLE AS THE INPUT PERSON.
+A family member looking at the output should say "That's definitely them!"
 
-RULE 3: ANTI-GENDER-SWAP VERIFICATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Before generating, VERIFY:
-□ Input gender detected correctly
-□ Output gender will match input exactly
-□ No feminine features added to male input
-□ No masculine features added to female input
-□ Facial hair status preserved from input
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  SECTION B: WHAT TO CREATE NEW - DO NOT PRESERVE FROM INPUT                  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-═══════════════════════════════════════════════════════════════════════════════
-🎬 THE LEGENDARY SCENE: ${scenario.title}
-⏰ ERA: ${scenario.era}
-═══════════════════════════════════════════════════════════════════════════════
+🎨 HAIR - CREATE NEW, DO NOT PRESERVE INPUT HAIR:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• REMOVE any hat, cap, beanie, headwear, hood from input photo - IGNORE IT
+• GENERATE completely new era-appropriate hairstyle:
+  
+  IF MALE DETECTED IN INPUT:
+  → Generate: ${eraStyles.maleHair}
+  → Hair color: Can match input OR be natural shade appropriate for era
+  → Style must look like professional 1960s-90s salon styling
+  
+  IF FEMALE DETECTED IN INPUT:
+  → Generate: ${eraStyles.femaleHair}
+  → Hair color: Can match input OR be natural shade appropriate for era
+  → Style must look like professional era-appropriate salon styling
+
+🧔 FACIAL HAIR - CREATE ERA-APPROPRIATE, IGNORE INPUT FACIAL HAIR:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• IGNORE any beard, stubble, mustache, goatee from input photo
+• GENERATE era-appropriate facial hair:
+  
+  IF MALE DETECTED IN INPUT:
+  → Generate: ${eraStyles.maleFacialHair}
+  → This is the ${scenario.era} look - apply it regardless of input
+  
+  IF FEMALE DETECTED IN INPUT:
+  → No facial hair (obviously)
+
+👔 WARDROBE - CREATE ERA-APPROPRIATE CLOTHING:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• REMOVE modern clothing, t-shirts, hoodies, modern accessories
+• GENERATE era-authentic wardrobe:
+  
+  IF MALE DETECTED: ${eraStyles.maleWardrobe}
+  IF FEMALE DETECTED: ${eraStyles.femaleWardrobe}
+
+👓 ACCESSORIES - REMOVE MODERN, ADD ERA-APPROPRIATE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• REMOVE: Modern glasses, sunglasses, earbuds, smartwatch, modern jewelry
+• ADD: Era-appropriate accessories if the scene requires them
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  SECTION C: GENDER PROTECTION - ABSOLUTE RULE                                ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+⚠️ CRITICAL GENDER RULE - THIS OVERRIDES EVERYTHING:
+• Step 1: Detect gender from input photo FIRST
+• Step 2: Lock that gender for the entire generation
+• Male input → Male output with MALE hair and MALE facial hair options
+• Female input → Female output with FEMALE hair and no facial hair
+• NEVER swap, change, or alter gender under ANY circumstance
+• Scene descriptions mentioning opposite gender → IGNORE and use input gender
+
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║  🎬 THE LEGENDARY SCENE: ${scenario.title.padEnd(50)}║
+║  ⏰ ERA: ${scenario.era.padEnd(60)}║
+╚═══════════════════════════════════════════════════════════════════════════════╝
 
 ${scenario.prompt_template}
 
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  SECTION D: PHOTOGRAPHY & OUTPUT REQUIREMENTS                                ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+📷 PHOTOGRAPHY STYLE:
+• Matte, filmic color palette - ABSOLUTELY NO NEON, no oversaturation
+• Authentic ${scenario.era} era photography aesthetic and color science
+• Natural film grain appropriate to the decade's camera technology
+• Warm, organic tones - nothing digital, nothing modern looking
+• Period-correct lighting: tungsten warmth, natural window light, stage lighting
+
+🎭 COMPOSITION:
+• The TIME TRAVELER (input person) is THE STAR - prominently featured
+• Celebrities positioned around them with UNIQUE famous likenesses
+• Candid, natural moment - NOT stiff, NOT posed, NOT looking at camera
+• Dynamic energy with people caught in genuine motion and interaction
+• Proper depth of field and focus on the time traveler
+
+🌟 CELEBRITY REQUIREMENTS:
+• Each celebrity MUST have their historically accurate, recognizable face
+• NO cloning - every person in the scene is distinctly unique
+• Famous features preserved: Ali's powerful jaw, MJ's distinctive nose, Elvis's iconic hair
+• Authentic period-correct styling for each celebrity
+
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║  🔍 FINAL VERIFICATION CHECKLIST - MUST ALL BE TRUE                          ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+Before generating, verify ALL of these:
+
+□ TIME TRAVELER GENDER matches input photo EXACTLY (male→male, female→female)
+□ TIME TRAVELER FACE is 100% recognizable as the input person
+□ TIME TRAVELER has NEW era-appropriate HAIR (not input hair, no hat)
+□ TIME TRAVELER has NEW era-appropriate FACIAL HAIR (if male) or none (if female)
+□ TIME TRAVELER has NEW era-appropriate WARDROBE (not input clothes)
+□ TIME TRAVELER BODY TYPE matches input photo approximately
+□ All CELEBRITIES are UNIQUE and RECOGNIZABLE with famous likenesses
+□ Scene feels AUTHENTIC to ${scenario.era} - matte, filmic, organic
+□ NO NEON colors, NO oversaturation, NO digital/modern look
+□ CANDID natural energy - not stiff, not posed, not looking at camera
+
 ═══════════════════════════════════════════════════════════════════════════════
-📸 OUTPUT REQUIREMENTS - CINEMATIC FILM QUALITY
+GENERATE THIS LEGENDARY MUSEUM-QUALITY MOMENT NOW.
 ═══════════════════════════════════════════════════════════════════════════════
-
-PHOTOGRAPHY STYLE:
-• Matte, filmic color palette - ABSOLUTELY NO NEON or oversaturated colors
-• Authentic ${scenario.era} era photography aesthetic
-• Natural film grain appropriate to the decade
-• Warm, organic tones - nothing digital or modern looking
-• Period-correct lighting and shadows
-
-COMPOSITION:
-• The time traveler (input person) is THE STAR, prominently placed
-• Celebrities around them with their UNIQUE famous likenesses
-• Candid, natural moment - NOT stiff posed studio shot
-• Dynamic energy - people caught in motion/action
-
-CELEBRITY REQUIREMENTS:
-• Each celebrity MUST have their historically accurate face
-• NO cloning - each person is distinctly unique
-• Famous features preserved: Ali's jaw, MJ's nose, Elvis's hair, etc.
-
-═══════════════════════════════════════════════════════════════════════════════
-🔍 FINAL VERIFICATION BEFORE OUTPUT
-═══════════════════════════════════════════════════════════════════════════════
-
-□ Time traveler GENDER matches input photo EXACTLY
-□ Time traveler FACE is 100% recognizable as input person
-□ Time traveler BODY TYPE matches input photo
-□ Time traveler FACIAL HAIR matches input photo
-□ All celebrities are UNIQUE and RECOGNIZABLE
-□ Scene feels authentic to ${scenario.era}
-□ Matte, filmic look - NO neon, NO oversaturation
-□ Natural candid energy - NOT stiff or posed
-
-GENERATE THIS LEGENDARY MOMENT NOW.
 `;
 }
