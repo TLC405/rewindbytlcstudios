@@ -162,16 +162,18 @@ export function PreviewStudio({
             animate={{ opacity: 1, y: 0 }}
             className="text-center flex-1 mx-4"
           >
-            <span className="text-xs font-mono text-primary">{scenario.era}</span>
-            <h2 className="font-display text-xl md:text-2xl text-foreground mt-1 line-clamp-1">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-primary/15 text-primary border border-primary/25">
+              {scenario.era}
+            </span>
+            <h2 className="font-display text-xl md:text-2xl text-foreground mt-2 line-clamp-1 drop-shadow-sm">
               {scenario.title}
             </h2>
           </motion.div>
 
           {/* Remaining transforms badge */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/50 border border-border/50">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
             <Sparkles className="w-3 h-3 text-primary" />
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="text-xs font-semibold text-primary">
               {remainingTransforms} left
             </span>
           </div>
@@ -292,11 +294,11 @@ export function PreviewStudio({
                     </div>
                     
                     <div className="text-center">
-                      <p className="font-display text-xl text-foreground">REWINDING...</p>
-                      <p className="text-xs text-muted-foreground font-mono mt-1">{Math.round(progress)}%</p>
+                      <p className="font-display text-2xl text-foreground tracking-wider drop-shadow-lg">REWINDING...</p>
+                      <p className="text-sm text-primary font-mono mt-2 font-semibold">{Math.round(progress)}%</p>
                     </div>
 
-                    <div className="w-40 h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div className="w-48 h-2 bg-muted/50 rounded-full overflow-hidden border border-border/50">
                       <motion.div
                         className="h-full rounded-full bg-primary"
                         style={{ width: `${progress}%` }}
@@ -306,11 +308,13 @@ export function PreviewStudio({
                 ) : (
                   <motion.div
                     key="empty"
-                    className="h-full flex flex-col items-center justify-center gap-3 p-8"
+                    className="h-full flex flex-col items-center justify-center gap-4 p-8"
                   >
-                    <ImageIcon className="w-10 h-10 text-muted-foreground/20" />
-                    <p className="text-muted-foreground/60 text-sm text-center">
-                      Your result will<br />appear here
+                    <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center border border-border/30">
+                      <ImageIcon className="w-7 h-7 text-muted-foreground/40" />
+                    </div>
+                    <p className="text-muted-foreground/70 text-sm text-center font-medium">
+                      Your legendary result<br />will appear here
                     </p>
                   </motion.div>
                 )}
