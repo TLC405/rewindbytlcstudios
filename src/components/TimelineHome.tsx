@@ -354,25 +354,37 @@ export const TimelineHome = ({ onSelectScene, userTransformations = [] }: Timeli
                 className="scene-card group text-left"
               >
                 <div className="aspect-[4/3] relative overflow-hidden">
-                  {/* Placeholder gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-muted to-card" />
+                  {/* Era-specific gradient background */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-card via-muted/50 to-card" />
                   
-                  {/* Content overlay */}
-                  <div className="absolute inset-0 flex flex-col justify-end p-5 md:p-6 bg-gradient-to-t from-background/90 via-background/40 to-transparent">
-                    <span className="era-tag w-fit mb-3">{scene.era}</span>
-                    <h3 className="font-display text-xl md:text-2xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
-                      {scene.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {scene.description}
-                    </p>
+                  {/* Subtle pattern overlay */}
+                  <div className="absolute inset-0 opacity-5" style={{
+                    backgroundImage: `radial-gradient(circle at 25% 25%, hsl(var(--primary) / 0.2) 0%, transparent 50%)`
+                  }} />
+                  
+                  {/* Content overlay with stronger gradient for text legibility */}
+                  <div className="absolute inset-0 flex flex-col justify-end p-5 md:p-6">
+                    {/* Dark gradient for text */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+                    
+                    <div className="relative z-10">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-primary/20 text-primary border border-primary/30 mb-3">
+                        {scene.era}
+                      </span>
+                      <h3 className="font-display text-xl md:text-2xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors drop-shadow-lg">
+                        {scene.title}
+                      </h3>
+                      <p className="text-sm text-foreground/70 line-clamp-2 drop-shadow-md">
+                        {scene.description}
+                      </p>
+                    </div>
                   </div>
 
                   {/* Hover state */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/90 opacity-0 group-hover:opacity-100 transition-all duration-300">
                     <div className="flex items-center gap-2 text-primary">
                       <Sparkles className="w-5 h-5" />
-                      <span className="font-medium">Enter Scene</span>
+                      <span className="font-semibold tracking-wide">Enter Scene</span>
                     </div>
                   </div>
                 </div>
