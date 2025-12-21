@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { HeroCinematic } from "@/components/HeroCinematic";
 import { HommiesAuthModal } from "@/components/HommiesAuthModal";
 import { GlassNav } from "@/components/GlassNav";
@@ -29,7 +28,13 @@ const Index = () => {
   const [userTransformations, setUserTransformations] = useState<any[]>([]);
   const [showTimeline, setShowTimeline] = useState(false);
 
-  const { hasUsedFreeTransform, recordTransformation, isLoading: previewLoading, isBlocked } = useAdvancedFingerprint();
+  const { 
+    hasUsedFreeTransform, 
+    remainingTransforms,
+    recordTransformation, 
+    isLoading: previewLoading, 
+    isBlocked 
+  } = useAdvancedFingerprint();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -112,9 +117,9 @@ const Index = () => {
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 rounded-full border-2 border-muted border-t-primary mx-auto mb-6"
+            className="w-12 h-12 rounded-full border-2 border-muted border-t-primary mx-auto mb-4"
           />
-          <h1 className="font-display text-4xl font-bold gradient-text-gold tracking-wider">
+          <h1 className="font-display text-3xl font-bold gradient-text-gold tracking-wider">
             REWIND
           </h1>
         </motion.div>
@@ -124,12 +129,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      {/* Subtle grain overlay */}
-      <div className="fixed inset-0 pointer-events-none grain" />
-      
       <AnimatePresence mode="wait">
         {selectedScene ? (
-          // Studio Mode (Preview or Full)
           user ? (
             <AtomicStudio
               key="studio"
@@ -146,11 +147,11 @@ const Index = () => {
               preUploadedPhoto={uploadedPhoto}
               onTransformComplete={handlePreviewTransformComplete}
               hasUsedFreeTransform={hasUsedFreeTransform}
+              remainingTransforms={remainingTransforms}
               onShowLogin={() => setShowAuthModal(true)}
             />
           )
         ) : showTimeline || user ? (
-          // Timeline (Logged in or Preview mode active)
           <motion.div
             key="timeline"
             initial={{ opacity: 0 }}
@@ -172,14 +173,13 @@ const Index = () => {
               />
             </div>
 
-            <footer className="py-8 text-center border-t border-border/30">
-              <p className="text-xs text-muted-foreground">
+            <footer className="py-6 text-center border-t border-border/20">
+              <p className="text-xs text-muted-foreground/60">
                 © 2024 Rewind · Powered by Truth, Love & Connection
               </p>
             </footer>
           </motion.div>
         ) : (
-          // Landing Page (Not logged in, hasn't started preview)
           <motion.div
             key="landing"
             initial={{ opacity: 0 }}
@@ -190,6 +190,7 @@ const Index = () => {
               onPreviewClick={handlePreviewClick}
               onLoginClick={() => setShowAuthModal(true)}
               hasUsedFreeTransform={hasUsedFreeTransform || isBlocked}
+              remainingTransforms={remainingTransforms}
             />
           </motion.div>
         )}

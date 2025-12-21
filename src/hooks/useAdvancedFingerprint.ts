@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+const MAX_FREE_TRANSFORMS = 5;
+
 interface FingerprintData {
   fingerprint_hash: string;
   canvas_hash: string;
@@ -18,6 +20,7 @@ interface FingerprintState {
   isBlocked: boolean;
   hasUsedFreeTransform: boolean;
   transformCount: number;
+  remainingTransforms: number;
   isLoading: boolean;
   fingerprint: FingerprintData | null;
 }
@@ -43,7 +46,6 @@ const getCanvasFingerprint = (): string => {
     canvas.width = 200;
     canvas.height = 50;
 
-    // Draw various shapes and text
     ctx.textBaseline = 'top';
     ctx.font = '14px Arial';
     ctx.fillStyle = '#f60';
@@ -53,7 +55,6 @@ const getCanvasFingerprint = (): string => {
     ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
     ctx.fillText('REWIND 🎬', 4, 17);
 
-    // Add some geometry
     ctx.beginPath();
     ctx.arc(50, 25, 20, 0, Math.PI * 2);
     ctx.stroke();
@@ -151,7 +152,6 @@ const generateFingerprint = async (): Promise<FingerprintData> => {
   const device_memory = (navigator as any).deviceMemory || null;
   const cpu_cores = navigator.hardwareConcurrency || null;
 
-  // Combine all hashes for master fingerprint
   const combined = [
     canvas_hash,
     webgl_hash,
@@ -210,6 +210,7 @@ export function useAdvancedFingerprint() {
     isBlocked: false,
     hasUsedFreeTransform: false,
     transformCount: 0,
+    remainingTransforms: MAX_FREE_TRANSFORMS,
     isLoading: true,
     fingerprint: null,
   });
@@ -226,10 +227,12 @@ export function useAdvancedFingerprint() {
         .maybeSingle();
 
       if (exactMatch) {
+        const remaining = Math.max(0, MAX_FREE_TRANSFORMS - exactMatch.transformation_count);
         setState({
           isBlocked: exactMatch.is_blocked,
-          hasUsedFreeTransform: exactMatch.transformation_count >= 1,
+          hasUsedFreeTransform: exactMatch.transformation_count >= MAX_FREE_TRANSFORMS,
           transformCount: exactMatch.transformation_count,
+          remainingTransforms: remaining,
           isLoading: false,
           fingerprint: fp,
         });
@@ -244,16 +247,17 @@ export function useAdvancedFingerprint() {
         .limit(10);
 
       if (partialMatches && partialMatches.length > 0) {
-        // Check similarity for each match
         for (const match of partialMatches) {
           const similarity = checkSimilarity(fp, match as any);
           
           // 70%+ similarity = likely same person with VPN/incognito
           if (similarity >= 70) {
+            const remaining = Math.max(0, MAX_FREE_TRANSFORMS - match.transformation_count);
             setState({
               isBlocked: match.is_blocked,
-              hasUsedFreeTransform: match.transformation_count >= 1,
+              hasUsedFreeTransform: match.transformation_count >= MAX_FREE_TRANSFORMS,
               transformCount: match.transformation_count,
+              remainingTransforms: remaining,
               isLoading: false,
               fingerprint: fp,
             });
@@ -267,6 +271,7 @@ export function useAdvancedFingerprint() {
         isBlocked: false,
         hasUsedFreeTransform: false,
         transformCount: 0,
+        remainingTransforms: MAX_FREE_TRANSFORMS,
         isLoading: false,
         fingerprint: fp,
       });
@@ -286,7 +291,6 @@ export function useAdvancedFingerprint() {
     try {
       const fp = state.fingerprint;
 
-      // Try to upsert the fingerprint
       const { data: existing } = await supabase
         .from('device_fingerprints')
         .select('id, transformation_count')
@@ -310,40 +314,20 @@ export function useAdvancedFingerprint() {
           });
       }
 
+      const newCount = state.transformCount + 1;
+      const remaining = Math.max(0, MAX_FREE_TRANSFORMS - newCount);
+
       setState(prev => ({
         ...prev,
-        hasUsedFreeTransform: true,
-        transformCount: prev.transformCount + 1,
+        hasUsedFreeTransform: newCount >= MAX_FREE_TRANSFORMS,
+        transformCount: newCount,
+        remainingTransforms: remaining,
       }));
 
-      // Also record in ip_usage for backwards compatibility
-      const legacyHash = `fp_${fp.fingerprint_hash}`;
-      const { data: legacyExisting } = await supabase
-        .from('ip_usage')
-        .select('id, transformation_count')
-        .eq('ip_address', legacyHash)
-        .maybeSingle();
-
-      if (legacyExisting) {
-        await supabase
-          .from('ip_usage')
-          .update({
-            transformation_count: legacyExisting.transformation_count + 1,
-            last_used_at: new Date().toISOString(),
-          })
-          .eq('id', legacyExisting.id);
-      } else {
-        await supabase
-          .from('ip_usage')
-          .insert({
-            ip_address: legacyHash,
-            transformation_count: 1,
-          });
-      }
     } catch (error) {
       console.error('Error recording transformation:', error);
     }
-  }, [state.fingerprint]);
+  }, [state.fingerprint, state.transformCount]);
 
   return {
     ...state,
