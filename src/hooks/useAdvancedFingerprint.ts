@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 
 const MAX_FREE_TRANSFORMS = 1;
 
@@ -92,7 +91,7 @@ const getWebGLFingerprint = (): string => {
 // Audio fingerprinting
 const getAudioFingerprint = async (): Promise<string> => {
   try {
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
     if (!AudioContext) return 'no-audio';
 
     const context = new AudioContext();
@@ -149,7 +148,7 @@ const generateFingerprint = async (): Promise<FingerprintData> => {
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const language = navigator.language;
   const platform = navigator.platform;
-  const device_memory = (navigator as any).deviceMemory || null;
+  const device_memory = (navigator as unknown as { deviceMemory?: number }).deviceMemory || null;
   const cpu_cores = navigator.hardwareConcurrency || null;
 
   const combined = [
@@ -177,34 +176,9 @@ const generateFingerprint = async (): Promise<FingerprintData> => {
   };
 };
 
-// Check similarity between fingerprints (returns score 0-100)
-const checkSimilarity = (fp1: Partial<FingerprintData>, fp2: Partial<FingerprintData>): number => {
-  let matches = 0;
-  let total = 0;
-
-  const fields: (keyof FingerprintData)[] = [
-    'canvas_hash',
-    'webgl_hash', 
-    'audio_hash',
-    'screen_hash',
-    'timezone',
-    'platform',
-    'device_memory',
-    'cpu_cores',
-  ];
-
-  for (const field of fields) {
-    if (fp1[field] !== undefined && fp2[field] !== undefined) {
-      total++;
-      if (fp1[field] === fp2[field]) {
-        matches++;
-      }
-    }
-  }
-
-  return total > 0 ? Math.round((matches / total) * 100) : 0;
-};
-
+// Client-side fingerprint hook - actual rate limiting is enforced server-side
+// This hook generates the fingerprint for passing to the Edge Function
+// The Edge Function handles all rate limit checking and database updates
 export function useAdvancedFingerprint() {
   const [state, setState] = useState<FingerprintState>({
     isBlocked: false,
@@ -219,54 +193,7 @@ export function useAdvancedFingerprint() {
     try {
       const fp = await generateFingerprint();
       
-      // Check for exact match first
-      const { data: exactMatch } = await supabase
-        .from('device_fingerprints')
-        .select('*')
-        .eq('fingerprint_hash', fp.fingerprint_hash)
-        .maybeSingle();
-
-      if (exactMatch) {
-        const remaining = Math.max(0, MAX_FREE_TRANSFORMS - exactMatch.transformation_count);
-        setState({
-          isBlocked: exactMatch.is_blocked,
-          hasUsedFreeTransform: exactMatch.transformation_count >= MAX_FREE_TRANSFORMS,
-          transformCount: exactMatch.transformation_count,
-          remainingTransforms: remaining,
-          isLoading: false,
-          fingerprint: fp,
-        });
-        return;
-      }
-
-      // Check for partial matches (VPN/incognito detection)
-      const { data: partialMatches } = await supabase
-        .from('device_fingerprints')
-        .select('*')
-        .or(`canvas_hash.eq.${fp.canvas_hash},webgl_hash.eq.${fp.webgl_hash}`)
-        .limit(10);
-
-      if (partialMatches && partialMatches.length > 0) {
-        for (const match of partialMatches) {
-          const similarity = checkSimilarity(fp, match as any);
-          
-          // 70%+ similarity = likely same person with VPN/incognito
-          if (similarity >= 70) {
-            const remaining = Math.max(0, MAX_FREE_TRANSFORMS - match.transformation_count);
-            setState({
-              isBlocked: match.is_blocked,
-              hasUsedFreeTransform: match.transformation_count >= MAX_FREE_TRANSFORMS,
-              transformCount: match.transformation_count,
-              remainingTransforms: remaining,
-              isLoading: false,
-              fingerprint: fp,
-            });
-            return;
-          }
-        }
-      }
-
-      // No match found - new user
+      // Just generate the fingerprint - server will check rate limits
       setState({
         isBlocked: false,
         hasUsedFreeTransform: false,
@@ -276,7 +203,7 @@ export function useAdvancedFingerprint() {
         fingerprint: fp,
       });
     } catch (error) {
-      console.error('Fingerprint check error:', error);
+      console.error('Fingerprint generation error:', error);
       setState(prev => ({ ...prev, isLoading: false }));
     }
   }, []);
@@ -285,53 +212,36 @@ export function useAdvancedFingerprint() {
     checkFingerprint();
   }, [checkFingerprint]);
 
-  const recordTransformation = useCallback(async () => {
-    if (!state.fingerprint) return;
+  // Update local state after transformation (for UI purposes)
+  // Actual rate limiting is handled server-side
+  const recordTransformation = useCallback(() => {
+    const newCount = state.transformCount + 1;
+    const remaining = Math.max(0, MAX_FREE_TRANSFORMS - newCount);
 
-    try {
-      const fp = state.fingerprint;
+    setState(prev => ({
+      ...prev,
+      hasUsedFreeTransform: newCount >= MAX_FREE_TRANSFORMS,
+      transformCount: newCount,
+      remainingTransforms: remaining,
+    }));
+  }, [state.transformCount]);
 
-      const { data: existing } = await supabase
-        .from('device_fingerprints')
-        .select('id, transformation_count')
-        .eq('fingerprint_hash', fp.fingerprint_hash)
-        .maybeSingle();
-
-      if (existing) {
-        await supabase
-          .from('device_fingerprints')
-          .update({
-            transformation_count: existing.transformation_count + 1,
-            last_seen_at: new Date().toISOString(),
-          })
-          .eq('id', existing.id);
-      } else {
-        await supabase
-          .from('device_fingerprints')
-          .insert({
-            ...fp,
-            transformation_count: 1,
-          });
-      }
-
-      const newCount = state.transformCount + 1;
-      const remaining = Math.max(0, MAX_FREE_TRANSFORMS - newCount);
-
+  // Handle rate limit response from server
+  const handleRateLimitResponse = useCallback((isLimited: boolean, isBlocked: boolean = false) => {
+    if (isLimited || isBlocked) {
       setState(prev => ({
         ...prev,
-        hasUsedFreeTransform: newCount >= MAX_FREE_TRANSFORMS,
-        transformCount: newCount,
-        remainingTransforms: remaining,
+        hasUsedFreeTransform: true,
+        isBlocked,
+        remainingTransforms: 0,
       }));
-
-    } catch (error) {
-      console.error('Error recording transformation:', error);
     }
-  }, [state.fingerprint, state.transformCount]);
+  }, []);
 
   return {
     ...state,
     recordTransformation,
+    handleRateLimitResponse,
     refreshFingerprint: checkFingerprint,
   };
 }

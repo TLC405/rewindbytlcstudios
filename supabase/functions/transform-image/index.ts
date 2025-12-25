@@ -6,6 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const MAX_FREE_TRANSFORMS = 1;
+const RATE_LIMIT_WINDOW_HOURS = 24;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -21,15 +24,150 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { imageBase64, scenarioId, userId, transformationId, isPreview, isFreeShowcase } = await req.json();
+    const { imageBase64, scenarioId, userId, transformationId, isPreview, isFreeShowcase, fingerprintHash } = await req.json();
 
-    // userId is optional for preview/anonymous mode
     if (!imageBase64) {
       throw new Error('Missing required field: imageBase64');
     }
 
     const isAnonymous = !userId;
     console.log(`Starting transformation for ${isAnonymous ? 'anonymous user' : `user ${userId}`}, isPreview: ${isPreview}, isFreeShowcase: ${isFreeShowcase}`);
+
+    // SERVER-SIDE RATE LIMITING FOR ANONYMOUS USERS
+    if (isAnonymous && (isPreview || isFreeShowcase)) {
+      // Get client IP from headers
+      const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                       req.headers.get('x-real-ip') || 
+                       'unknown';
+      
+      console.log(`Checking rate limit for IP: ${clientIp}, fingerprint: ${fingerprintHash || 'none'}`);
+      
+      // Check IP-based rate limit using service role (bypasses RLS)
+      const { data: ipData, error: ipError } = await supabase
+        .from('ip_usage')
+        .select('id, transformation_count, last_used_at')
+        .eq('ip_address', clientIp)
+        .maybeSingle();
+
+      if (ipError) {
+        console.error('Error checking IP rate limit:', ipError);
+      }
+
+      // Check if rate limited
+      if (ipData && ipData.transformation_count >= MAX_FREE_TRANSFORMS) {
+        const lastUsed = new Date(ipData.last_used_at);
+        const hoursSince = (Date.now() - lastUsed.getTime()) / (1000 * 60 * 60);
+        
+        if (hoursSince < RATE_LIMIT_WINDOW_HOURS) {
+          console.log(`Rate limit exceeded for IP ${clientIp}: ${ipData.transformation_count} transforms`);
+          return new Response(
+            JSON.stringify({ 
+              error: 'Free preview limit reached. Sign up for unlimited transformations!',
+              code: 'RATE_LIMITED'
+            }), 
+            { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+
+      // Also check fingerprint-based rate limit if provided
+      if (fingerprintHash) {
+        const { data: fpData, error: fpError } = await supabase
+          .from('device_fingerprints')
+          .select('id, transformation_count, is_blocked, block_reason')
+          .eq('fingerprint_hash', fingerprintHash)
+          .maybeSingle();
+
+        if (fpError) {
+          console.error('Error checking fingerprint rate limit:', fpError);
+        }
+
+        // Check if device is blocked
+        if (fpData?.is_blocked) {
+          console.log(`Blocked device: ${fingerprintHash}, reason: ${fpData.block_reason}`);
+          return new Response(
+            JSON.stringify({ 
+              error: 'Access denied. Please sign up to continue.',
+              code: 'BLOCKED'
+            }), 
+            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Check fingerprint rate limit
+        if (fpData && fpData.transformation_count >= MAX_FREE_TRANSFORMS) {
+          console.log(`Rate limit exceeded for fingerprint ${fingerprintHash}: ${fpData.transformation_count} transforms`);
+          return new Response(
+            JSON.stringify({ 
+              error: 'Free preview limit reached. Sign up for unlimited transformations!',
+              code: 'RATE_LIMITED'
+            }), 
+            { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+
+      // Update rate limit counters BEFORE processing (to prevent race conditions)
+      if (ipData) {
+        await supabase
+          .from('ip_usage')
+          .update({ 
+            transformation_count: ipData.transformation_count + 1,
+            last_used_at: new Date().toISOString()
+          })
+          .eq('id', ipData.id);
+      } else {
+        await supabase
+          .from('ip_usage')
+          .insert({ 
+            ip_address: clientIp, 
+            transformation_count: 1 
+          });
+      }
+
+      if (fingerprintHash) {
+        const { data: existingFp } = await supabase
+          .from('device_fingerprints')
+          .select('id, transformation_count')
+          .eq('fingerprint_hash', fingerprintHash)
+          .maybeSingle();
+
+        if (existingFp) {
+          await supabase
+            .from('device_fingerprints')
+            .update({ 
+              transformation_count: existingFp.transformation_count + 1,
+              last_seen_at: new Date().toISOString()
+            })
+            .eq('id', existingFp.id);
+        } else {
+          await supabase
+            .from('device_fingerprints')
+            .insert({ 
+              fingerprint_hash: fingerprintHash, 
+              transformation_count: 1 
+            });
+        }
+      }
+
+      console.log('Rate limit check passed, proceeding with transformation');
+    }
+
+    // For authenticated users, verify credits
+    if (!isAnonymous && userId && !isPreview && !isFreeShowcase) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('credits')
+        .eq('user_id', userId)
+        .single();
+      
+      if (!profile || profile.credits <= 0) {
+        return new Response(
+          JSON.stringify({ error: 'Insufficient credits. Please add more credits to continue.' }), 
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
 
     let ultraPrompt: string;
 
@@ -153,7 +291,7 @@ serve(async (req) => {
     }
 
     // Deduct credit from user (skip for anonymous/preview mode)
-    if (!isAnonymous && userId) {
+    if (!isAnonymous && userId && !isPreview && !isFreeShowcase) {
       const { data: profile } = await supabase
         .from('profiles')
         .select('credits')
@@ -355,159 +493,112 @@ ${scenario.prompt_template}
 
 🎭 COMPOSITION:
 • The TIME TRAVELER (input person) is THE STAR - prominently featured
-• Celebrities positioned around them with UNIQUE famous likenesses
-• Candid, natural moment - NOT stiff, NOT posed, NOT looking at camera
-• Dynamic energy with people caught in genuine motion and interaction
-• Proper depth of field and focus on the time traveler
+• All celebrities must be IMMEDIATELY RECOGNIZABLE - their iconic looks
+• Natural poses and interactions - not stiff or artificial
+• Cinematic framing with depth and atmosphere
+• Hidden TLC easter eggs in the environment (as described in scene)
 
-🌟 CELEBRITY REQUIREMENTS:
-• Each celebrity MUST have their historically accurate, recognizable face
-• NO cloning - every person in the scene is distinctly unique
-• Famous features preserved: Ali's powerful jaw, MJ's distinctive nose, Elvis's iconic hair
-• Authentic period-correct styling for each celebrity
-
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║  🔍 FINAL VERIFICATION CHECKLIST - MUST ALL BE TRUE                          ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
-
-Before generating, verify ALL of these:
-
-□ TIME TRAVELER GENDER matches input photo EXACTLY (male→male, female→female)
-□ TIME TRAVELER FACE is 100% recognizable as the input person
-□ TIME TRAVELER has NEW era-appropriate HAIR (not input hair, no hat)
-□ TIME TRAVELER has NEW era-appropriate FACIAL HAIR (if male) or none (if female)
-□ TIME TRAVELER has NEW era-appropriate WARDROBE (not input clothes)
-□ TIME TRAVELER BODY TYPE matches input photo approximately
-□ All CELEBRITIES are UNIQUE and RECOGNIZABLE with famous likenesses
-□ Scene feels AUTHENTIC to ${scenario.era} - matte, filmic, organic
-□ NO NEON colors, NO oversaturation, NO digital/modern look
-□ CANDID natural energy - not stiff, not posed, not looking at camera
-
-═══════════════════════════════════════════════════════════════════════════════
-GENERATE THIS LEGENDARY MUSEUM-QUALITY MOMENT NOW.
-═══════════════════════════════════════════════════════════════════════════════
+🎨 OUTPUT REQUIREMENTS:
+• High-resolution cinematic portrait
+• Rich detail in clothing, hair, environment
+• Film-era color grading matching the decade
+• Natural skin tones, no plastic or AI artifacts
+• The scene should feel like a rediscovered photograph from that era
 `;
 }
 
 function buildFreeShowcasePrompt(): string {
-  // Random legendary scene combining icons from multiple decades
-  const showcaseScenes = [
-    {
-      title: "The Ultimate Legends Gathering",
-      era: "Multi-Era Time Collision",
-      description: "A miraculous moment where legends from every decade gather in one extraordinary photograph"
-    }
-  ];
-
-  const scene = showcaseScenes[0];
-
   return `
 ╔═══════════════════════════════════════════════════════════════════════════════╗
-║  ⚡ ULTIMATE FREE SHOWCASE - LEGENDS ACROSS ALL DECADES ⚡                    ║
+║  ⚡ ULTIMATE FREE SHOWCASE - STUDIO 54 LEGENDS GATHERING ⚡                   ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  SECTION A: FACE-ONLY LOCK FROM INPUT PHOTO                                   ┃
+┃  SECTION A: WHAT TO LOCK FROM INPUT PHOTO (FACE GEOMETRY ONLY)               ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-LOCK THESE EXACTLY FROM INPUT:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ GENDER: Detect male/female → OUTPUT MUST MATCH 100%
-✓ EYE SHAPE: Exact shape, spacing, color
-✓ EYEBROWS: Exact arch, thickness, color
-✓ NOSE: Exact bridge, tip, nostril shape
-✓ LIPS: Exact thickness, cupid's bow, color
-✓ JAW: Exact jawline, chin shape
-✓ CHEEKBONES: Exact height and prominence
-✓ SKIN: Exact tone, every freckle, mole, birthmark
+LOCK THESE EXACTLY - COPY PIXEL-BY-PIXEL FROM INPUT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ GENDER: Detect male/female from input → OUTPUT MUST MATCH 100%
+✓ EYE SHAPE: Exact almond/round/hooded shape, exact spacing, exact color
+✓ EYEBROWS: Exact arch, thickness, color, spacing from input
+✓ NOSE: Exact bridge height, tip shape, nostril width, nose length
+✓ LIPS: Exact lip thickness, cupid's bow, lip color, mouth width
+✓ JAW: Exact jawline angle, chin shape, chin cleft if present
+✓ CHEEKBONES: Exact height and prominence from input
+✓ SKIN: Exact skin tone, texture, every freckle, mole, birthmark, scar
 ✓ BODY TYPE: Approximate build from input
-✓ AGE: Approximate age range from input
+
+THE OUTPUT FACE MUST BE IMMEDIATELY RECOGNIZABLE AS THE INPUT PERSON.
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  SECTION B: CREATE NEW - DO NOT USE INPUT HAIR/CLOTHES                        ┃
+┃  SECTION B: CREATE NEW - 1970s DISCO ERA STYLING                             ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-🎨 HAIR - REMOVE ANY HAT, CREATE NEW VINTAGE STYLE:
-• REMOVE any hat, cap, beanie, hood from input
-• IF MALE: Generate classic 1970s feathered layers or slicked executive style
-• IF FEMALE: Generate glamorous 1970s Farrah Fawcett waves or elegant curls
+🎨 HAIR - CREATE NEW 1970s DISCO HAIRSTYLE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IF MALE: Generate 1970s shaggy feathered layers, disco-era blow-dried volume, 
+         or afro with pick, long sideburns, center part with flow
+IF FEMALE: Generate 1970s Farrah Fawcett feathered wings, glamorous long waves,
+           afro, or sleek center-part disco queen hair
 
-🧔 FACIAL HAIR - CREATE ERA STYLE:
-• IF MALE: Light stylish mustache or clean-shaven
-• IF FEMALE: None
+🧔 FACIAL HAIR - 1970s STYLE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IF MALE: 1970s thick mustache, or full beard, or clean with dramatic sideburns
+IF FEMALE: No facial hair
 
-👔 WARDROBE - CREATE SPECTACULAR VINTAGE:
-• IF MALE: Sharp 1970s suit, open collar, gold chain, platform shoes
-• IF FEMALE: Glamorous 1970s halter dress, elegant jewelry
-
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║  🎬 THE ULTIMATE LEGENDS GATHERING                                            ║
-║  ⏰ ERA: 1970s DISCO ERA - STUDIO 54 VIBES                                    ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
-
-THE SCENE:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-The most exclusive party in history. Inside the legendary Studio 54 nightclub, 
-1977. The disco ball spins above, casting diamond reflections across the room.
-
-THE TIME TRAVELER (input person with LOCKED face) stands CENTER, 
-surrounded by the greatest icons of the 1970s:
-
-LEFT SIDE:
-• MUHAMMAD ALI - The Greatest, in sharp suit, playful boxing stance
-• DIANA ROSS - Glamorous in sequined gown, magnificent afro
-• ANDY WARHOL - Silver wig, black turtleneck, observing with camera
-
-RIGHT SIDE:  
-• DONNA SUMMER - Disco queen in flowing dress, mid-laugh
-• STEVIE WONDER - Behind piano keys, joyful smile, signature braids
-• GRACE JONES - Striking androgynous style, geometric haircut
-
-BACKGROUND ATMOSPHERE:
-• Mirrored walls, neon purple and pink lighting
-• Disco ball fragments of light everywhere
-• VIP velvet ropes, champagne bottles
-• Dance floor visible with silhouetted dancers
-• Authentic 1970s Studio 54 decadent energy
-
-THE MOMENT:
-Everyone gravitating toward THE TIME TRAVELER as if they're the guest of honor.
-Natural, candid energy - caught mid-celebration, genuine laughter and connection.
-
-PHOTOGRAPHY STYLE:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-• 1970s nightclub photography aesthetic
-• Warm tungsten tones with disco lighting accents
-• Film grain authentic to era
-• Matte, organic - NO modern digital look
-• Rich shadows, atmospheric depth
-• Ultra high resolution, museum-quality detail
-
-CRITICAL CELEBRITY REQUIREMENTS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-• Each celebrity MUST have their EXACT famous face
-• Muhammad Ali: Powerful jaw, confident eyes, boxing champion physique
-• Diana Ross: Stunning features, magnificent presence, signature smile
-• Donna Summer: Beautiful disco queen features, joyful expression
-• Stevie Wonder: Signature smile, sunglasses, musical genius aura
-• Andy Warhol: Pale skin, silver wig, artistic observer demeanor
-• Grace Jones: Striking angular features, bold androgynous style
-• NO cloning - every person distinctly unique
+👔 WARDROBE - 1970s STUDIO 54 GLAMOUR:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IF MALE: Open silk disco shirt showing chest, gold chains, bell-bottoms, 
+         platform shoes, or sleek white suit John Travolta style
+IF FEMALE: Halter top with sequins, flowing palazzo pants, platform heels,
+           or glamorous wrap dress, statement jewelry
 
 ╔═══════════════════════════════════════════════════════════════════════════════╗
-║  🔍 FINAL VERIFICATION                                                        ║
+║  🎬 THE SCENE: STUDIO 54 - 1977 - THE GREATEST PARTY EVER                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 
-□ TIME TRAVELER GENDER matches input EXACTLY
-□ TIME TRAVELER FACE is 100% recognizable as input person
-□ TIME TRAVELER has NEW vintage hair (no hat from input)
-□ TIME TRAVELER has NEW vintage wardrobe
-□ All 6 CELEBRITIES are UNIQUE and RECOGNIZABLE
-□ Studio 54 atmosphere is authentic 1970s
-□ Matte, filmic, organic - NO neon oversaturation
+Create an explosive painted 1977 disco scene at Studio 54 like a legendary album gatefold.
 
-═══════════════════════════════════════════════════════════════════════════════
-GENERATE THIS SPECTACULAR SHOWCASE MOMENT NOW.
-═══════════════════════════════════════════════════════════════════════════════
+THE TIME TRAVELER (user from input photo) stands CENTER STAGE under the iconic 
+man-in-the-moon spoon spotlight, commanding the dance floor with star energy.
+
+SURROUNDING LEGENDS (all with EXACT real faces and iconic looks):
+• Muhammad Ali - powerful stance, in evening wear, the champ at the party
+• Diana Ross - glamorous in sequins, that legendary smile and hair
+• Andy Warhol - platinum wig, round glasses, watching with knowing eyes
+• Donna Summer - the disco queen herself, mid-dance move
+• Stevie Wonder - at piano or standing nearby, that joyful expression
+• Grace Jones - fierce androgynous look, flat-top hair, dramatic pose
+
+ENVIRONMENT:
+• Iconic Studio 54 interior with famous moon and spoon sculpture
+• Glittering disco balls casting rainbow reflections
+• Dramatic club lighting - purple, gold, white spotlights
+• Velvet ropes and glamorous crowd in background
+• Champagne and celebration everywhere
+• Hidden "TLC" in neon sign on wall and on VIP area sign
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  PHOTOGRAPHY & OUTPUT REQUIREMENTS                                           ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+📷 1970s PHOTOGRAPHY AESTHETIC:
+• Rich, warm Kodachrome color palette with disco lighting accents
+• Slight film grain for authentic 70s feel
+• Dynamic club lighting with dramatic shadows and highlights
+• Glamorous but not garish - Studio 54 was sophisticated chaos
+
+🎭 CRITICAL CELEBRITY REQUIREMENTS:
+• Each celebrity MUST be immediately recognizable
+• Use their ICONIC 1977 looks - real hairstyles, real fashion, real faces
+• Muhammad Ali - unmistakable powerful presence
+• Diana Ross - that huge beautiful afro and megawatt smile
+• Andy Warhol - platinum silver wig, pale skin, glasses
+• Donna Summer - the Last Dance era glamour
+• Stevie Wonder - braids/afro, sunglasses, joyful presence
+• Grace Jones - angular features, dramatic androgynous style
+
+The TIME TRAVELER is THE STAR - center of attention, belonging there naturally.
 `;
 }
