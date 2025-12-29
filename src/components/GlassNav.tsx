@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-import { User, Crown, LogIn, Settings, Sparkles } from "lucide-react";
+import { User, Crown, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import { VinylLogo } from "./rewind/VinylLogo";
 
 interface GlassNavProps {
   user: any;
@@ -20,21 +21,10 @@ export function GlassNav({ user, credits, displayName, onAuthClick, onLogout }: 
     >
       <div className="max-w-6xl mx-auto">
         <div className="glass-heavy rounded-2xl px-4 md:px-6 py-3 flex items-center justify-between">
-          {/* Logo */}
+          {/* Logo - Vinyl Record */}
           <Link to="/" className="flex items-center gap-2 group">
-            <motion.div
-              className="relative w-8 h-8 rounded-lg bg-primary flex items-center justify-center overflow-hidden"
-              whileHover={{ scale: 1.05 }}
-            >
-              <motion.span
-                className="font-display text-lg text-primary-foreground font-bold"
-                animate={{ rotate: [0, 360] }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              >
-                R
-              </motion.span>
-            </motion.div>
-            <span className="font-display text-xl md:text-2xl text-foreground tracking-wide group-hover:text-primary transition-colors">
+            <VinylLogo size="sm" />
+            <span className="font-display text-xl md:text-2xl text-foreground tracking-wide group-hover:text-primary transition-colors hidden sm:block">
               REWIND
             </span>
           </Link>
