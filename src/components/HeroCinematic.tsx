@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Crown, ArrowRight, Sparkles, Heart } from "lucide-react";
 import { ExampleGallery } from "./ExampleGallery";
+import { VinylLogo } from "./rewind/VinylLogo";
 
 interface HeroCinematicProps {
   onPreviewClick: () => void;
@@ -40,24 +41,28 @@ export function HeroCinematic({
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 py-12">
       {/* Background gradient orbs */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="orb orb-gold w-96 h-96 -top-48 -right-48 opacity-60" />
-        <div className="orb orb-purple w-80 h-80 bottom-20 -left-40 opacity-40" />
+        <div className="orb orb-1" />
+        <div className="orb orb-2" />
+        <div className="orb orb-3" />
       </div>
 
       {/* Main content - two column layout */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      <div className="relative z-10 w-full max-w-6xl mx-auto grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
         
         {/* Left side - Text content */}
         <div className="text-center lg:text-left order-2 lg:order-1">
-          {/* Badge */}
+          {/* Vinyl Logo + Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6"
+            className="flex items-center gap-3 justify-center lg:justify-start mb-6"
           >
-            <Heart className="w-3 h-3 text-primary fill-primary" />
-            <span className="text-xs font-medium text-primary/90">TLC Studios</span>
+            <VinylLogo size="md" />
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+              <Heart className="w-3 h-3 text-primary fill-primary" />
+              <span className="text-xs font-medium text-primary/90">TLC Studios</span>
+            </div>
           </motion.div>
 
           {/* Title */}
